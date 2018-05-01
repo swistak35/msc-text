@@ -1,0 +1,71 @@
+% Opcje klasy 'iithesis' opisane sa w komentarzach w pliku klasy. Za ich pomoca
+% ustawia sie przede wszystkim jezyk i rodzaj (lic/inz/mgr) pracy, oraz czy na
+% drugiej stronie pracy ma byc skladany wzor oswiadczenia o autorskim wykonaniu.
+\documentclass[declaration,shortabstract]{iithesis}
+
+\usepackage[utf8]{inputenc}
+
+%%%%% DANE DO STRONY TYTUŁOWEJ
+% Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
+% pracy nalezy podac zarowno w jezyku polskim, jak i angielskim.
+% Pamietaj o madrym (zgodnym z logicznym rozbiorem zdania oraz estetyka) recznym
+% zlamaniu wierszy w temacie pracy, zwlaszcza tego w jezyku pracy. Uzyj do tego
+% polecenia \fmlinebreak.
+\polishtitle    {Analiza statyczna języka Ruby}
+\englishtitle   {English title}
+\polishabstract {\ldots}
+\englishabstract{\ldots}
+% w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
+\author         {Maksymilian Debeściak}
+% w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
+% w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
+\advisor        {dr Jan Kowalski}
+%\date          {}                     % Data zlozenia pracy
+% Dane do oswiadczenia o autorskim wykonaniu
+%\transcriptnum {}                     % Numer indeksu
+%\advisorgen    {dr. Jana Kowalskiego} % Nazwisko promotora w dopelniaczu
+%%%%%
+
+%%%%% WLASNE DODATKOWE PAKIETY
+%
+%\usepackage{graphicx,listings,amsmath,amssymb,amsthm,amsfonts,tikz}
+%
+%%%%% WŁASNE DEFINICJE I POLECENIA
+%
+%\theoremstyle{definition} \newtheorem{definition}{Definition}[chapter]
+%\theoremstyle{remark} \newtheorem{remark}[definition]{Observation}
+%\theoremstyle{plain} \newtheorem{theorem}[definition]{Theorem}
+%\theoremstyle{plain} \newtheorem{lemma}[definition]{Lemma}
+%\renewcommand \qedsymbol {\ensuremath{\square}}
+% ...
+%%%%%
+
+\begin{document}
+
+%%%%% POCZĄTEK ZASADNICZEGO TEKSTU PRACY
+
+\chapter{Wprowadzenie}
+
+Współcześnie powstaje wiele narzędzi ułatwiających i przyśpieszających pracę programistów,
+w szczególności dla wielu języków programowania istnieją zintegrowane środowiska programistyczne (IDE),
+które próbują dostarczyć jak najwięcej takich narzędzi w jednym spójnym środowisku. Jednymi z najbardziej
+podstawowych funkcjonalności takich środowisk są:
+* autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
+* skok do definicji (stałej, funkcji lub zmiennej)
+* informacja o typie zmiennej
+* refactoring - zmiana nazwy klasy (globalnie, w całym projekcie), wydzielenie metody, zmiennej, etc.
+
+Zintegrowane środowiska nie są niczym nowym i są popularne wśród programistów od wielu lat.
+Jednakże, implementacja powyższych funkcjonalności jest bardzo zależna od języka. W językach silnie typowanych jest to znacznie prostsze, ponieważ gdy wiemy już jakiego typu jest zmienna - lista dostępnych nazw funkcji jest łatwa do obliczenia (autouzupełnianie). Podobnie, języki silnie typowane często mają _static dispatch_, więc w momencie kompilacji wiemy gdzie jest kod źródłowy, który zostanie użyty w danym wywołaniu funkcji (skok do definicji). Oczywiście, możemy używać konstrukcji języka (np. w C, wywołanie funkcji która jest przechowana we wskaźniku), które to zadanie znacznie utrudniają, ale nie używa się ich zbyt często.
+
+Zgoła odmienna sytuacja jest w językach dynamicznie typowanych (takich jak Ruby, Python), gdzie język nie dostarcza kompilatora, który dostarczałby informacji o kodzie źródłowym. W języku Ruby, o którym jest ta praca, statyczne wywnioskowanie definicji jest szczególnie ciężkie z dwóch powodów:
+* wielu różnych dostępnych konstrukcji języka, takich jak wielokrotne dziedziczenie, klasy singletonowe, prepend, metaprogramowanie, które pozwalają na tworzenie skomplikowanych obiektów i hierarchii klas
+* społeczności rubiego, która w udostepnianych bibliotekach chętnie korzysta z tych skomplikowanych konstrukcji oraz metaprogramowania
+
+%%%%% BIBLIOGRAFIA
+
+%\begin{thebibliography}{1}
+%\bibitem{example} \ldots
+%\end{thebibliography}
+
+\end{document}
