@@ -12,14 +12,14 @@
 % zlamaniu wierszy w temacie pracy, zwlaszcza tego w jezyku pracy. Uzyj do tego
 % polecenia \fmlinebreak.
 \polishtitle    {Analiza statyczna języka Ruby}
-\englishtitle   {English title}
+\englishtitle   {Static analysis for Ruby language}
 \polishabstract {\ldots}
 \englishabstract{\ldots}
 % w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
-\author         {Maksymilian Debeściak}
+\author         {Rafał Łasocha}
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
 % w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
-\advisor        {dr Jan Kowalski}
+\advisor        {prof. Witold Charatonik}
 %\date          {}                     % Data zlozenia pracy
 % Dane do oswiadczenia o autorskim wykonaniu
 %\transcriptnum {}                     % Numer indeksu
@@ -42,25 +42,167 @@
 
 \begin{document}
 
-%%%%% POCZĄTEK ZASADNICZEGO TEKSTU PRACY
-
 \chapter{Wprowadzenie}
 
-Współcześnie powstaje wiele narzędzi ułatwiających i przyśpieszających pracę programistów,
-w szczególności dla wielu języków programowania istnieją zintegrowane środowiska programistyczne (IDE),
-które próbują dostarczyć jak najwięcej takich narzędzi w jednym spójnym środowisku. Jednymi z najbardziej
-podstawowych funkcjonalności takich środowisk są:
-* autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
-* skok do definicji (stałej, funkcji lub zmiennej)
-* informacja o typie zmiennej
-* refactoring - zmiana nazwy klasy (globalnie, w całym projekcie), wydzielenie metody, zmiennej, etc.
+Współcześnie powstaje wiele narzędzi ułatwiających i przyśpieszających pracę programistów.
+W szczególności dla wielu języków programowania istnieją zintegrowane środowiska programistyczne (IDE), które próbują dostarczyć jak najwięcej takich narzędzi w jednym spójnym środowisku. Jednymi z najbardziej podstawowych funkcjonalności takich środowisk są:
+
+\begin{itemize}
+\item autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
+\item skok do definicji (stałej, funkcji lub zmiennej)
+\item informacja o typie zmiennej
+\item refactoring - zmiana nazwy klasy (globalnie, w całym projekcie), wydzielenie metody, zmiennej, etc.
+\end{itemize}
+
+Niniejsza praca przedstawia jak można wykorzystać analizę statyczną plików źródłowych, aby dostarczyć powyższe funkcjonalności w języku Ruby, który z racji swojej dynamicznej natury stawia pewne problemy mało istotne w językach statycznie typowanych.
+
+\section{Założenia i cele}
+
+\subsection{Utrudnienia w językach słabo typowanych}
 
 Zintegrowane środowiska nie są niczym nowym i są popularne wśród programistów od wielu lat.
-Jednakże, implementacja powyższych funkcjonalności jest bardzo zależna od języka. W językach silnie typowanych jest to znacznie prostsze, ponieważ gdy wiemy już jakiego typu jest zmienna - lista dostępnych nazw funkcji jest łatwa do obliczenia (autouzupełnianie). Podobnie, języki silnie typowane często mają _static dispatch_, więc w momencie kompilacji wiemy gdzie jest kod źródłowy, który zostanie użyty w danym wywołaniu funkcji (skok do definicji). Oczywiście, możemy używać konstrukcji języka (np. w C, wywołanie funkcji która jest przechowana we wskaźniku), które to zadanie znacznie utrudniają, ale nie używa się ich zbyt często.
+Jednakże, implementacja narzędzi bazujących na analizie kodu źródłowego zależy od niektórych cech języków programowania.
+W językach silnie typowanych jest to znacznie prostsze, ponieważ gdy wiemy już jakiego typu jest zmienna - lista dostępnych nazw funkcji jest łatwa do obliczenia (autouzupełnianie).
+Podobnie, języki silnie typowane często mają \textit{static dispatch}, więc w momencie kompilacji wiemy gdzie jest kod źródłowy, który zostanie użyty w danym wywołaniu funkcji (skok do definicji).
+Oczywiście, w każdym języku możemy używać konstrukcji (np. w C, wywołanie funkcji która jest przechowana we wskaźniku), które to zadanie znacznie utrudniają, ale nie używa się ich zbyt często.
+W językach dynamicznie typowanych (takich jak Ruby, Python), gdzie język nie dostarcza kompilatora, który dostarczałby informacji o kodzie źródłowym, informacje te musimy sobie znaleźć sami.
 
-Zgoła odmienna sytuacja jest w językach dynamicznie typowanych (takich jak Ruby, Python), gdzie język nie dostarcza kompilatora, który dostarczałby informacji o kodzie źródłowym. W języku Ruby, o którym jest ta praca, statyczne wywnioskowanie definicji jest szczególnie ciężkie z dwóch powodów:
-* wielu różnych dostępnych konstrukcji języka, takich jak wielokrotne dziedziczenie, klasy singletonowe, prepend, metaprogramowanie, które pozwalają na tworzenie skomplikowanych obiektów i hierarchii klas
-* społeczności rubiego, która w udostepnianych bibliotekach chętnie korzysta z tych skomplikowanych konstrukcji oraz metaprogramowania
+\subsection{Utrudnienia w Ruby}
+
+W języku Ruby, o którym jest ta praca, statyczne wywnioskowanie definicji jest szczególnie ciężkie z dwóch powodów:
+\begin{itemize}
+\item wielu różnych dostępnych konstrukcji języka, takich jak wielokrotne dziedziczenie, klasy singletonowe, \textit{prepend} (przypis: nie wiem jak ten mechanizm się nazywa w nomenklaturze języków programowania), metaprogramowanie, które pozwalają na tworzenie skomplikowanych obiektów i hierarchii klas
+\item społeczności rubiego, która w udostępnianych bibliotekach oraz projektach chętnie korzysta z tych skomplikowanych konstrukcji oraz metaprogramowania. Z jednej strony, duża ekspresja języka pozwala na szybkie wytwarzanie oprogramowania, z drugiej strony, analiza statyczna kodu, a nawet analiza kodu przez programistę jest trudniejsza (problemy podobne, z którymi zmagał się Smalltalk)
+\end{itemize}
+
+\subsection{Aktualny stan}
+
+Do tworzenia oprogramowania w Ruby, programiści najczęściej wykorzystują Rubymine, Vim, Emacs, Atom (przypis: strzał na razie, ale nic istotnego to nie zmieni).
+Rubymine jest jedynym IDE w tym rankingu, pozostałe narzędzia to tylko edytory tekstu, wspierane wtyczkami.
+Rubymine dostarcza funkcjonalności wspomnianych we wstępie, jednak jest to narzędzie płatne i zamknięte.
+Edytory tekstu same w sobie nie posiadają tych funkcjonalności, ale istnieją wtyczki, które w jakiejś części te funkcjonalności dostarczają. Jak to bywa z analizą statyczną, efektywność tych narzędzi to pewne spektrum, jedne narzędzia dostarczają lepsze autouzupełnianie, a inne gorsze, nie jest to binarne i jakość tych funkcjonalności ma duże znaczenie dla programisty.
+Najpopularniejsze wtyczki to:
+\begin{itemize}
+\item CTags - zbiera symbole z całego projektu i ich lokalizacje, nie radzi sobie w żaden sposób z metaprogramowaniem i nie potrafi dostarczyć tych funkcjonalności zależnie od kontekstu (np. skok do definicji metody zależy od miejsca, w którym ją się wywołuje)
+\item Robe - dostarcza informacje zależne od kontekstu, ale wykorzystuje bardzo proste heurystyki do zawężenia wyników
+\item Solargraph - dostarcza podobne funkcjonalności do tych wymienionych we wstępie (oprócz \textit{refactoringu}), stosuje do tego analizę statyczną oraz wykorzystuje inne źródła (takie jak dokumentacja YARD)
+\item RGL - odmiennie od pozostałych narzędzi, dostarcza system typów i inferencję typów do ruby. Wymaga jednak adnotacji klas i metod, tj. inferencja typów zachodzi tylko w ``otypowanych'' przez programistę metodach.
+\end{itemize}
+
+\subsection{Założenia i cele}
+
+Celem pracy jest napisanie wtyczki działającej w zwykłych edytorach tekstu, która będzie oferować narzędzia wspierające pracę programisty.
+Nie powinna wymagać od programisty zaawansowanej konfiguracji oraz żadnej pracy ze strony programisty (w szczególności pisania adnotacji typów).
+Powinna dostarczyć jak najbardziej trafne informacje, głównie wykorzystując analizę statyczną, ale również inne źródła, jeśli jest to możliwe.
+Informacje dostarczane przez wtyczkę niekoniecznie muszą być bezpieczne (w rozumieniu bezpiecznej analizy statycznej), bo jest to tylko wsparcie programisty, pozwalające sprawniej mu się poruszać po kodzie i go pisać.
+Powinna brać pod uwagę praktyczne problemy wynikające nie tylko z technicznych zawiłości języka, ale również praktycznych.
+W szczególności, powinna jak najlepiej sobie radzić z metaprogramowaniem, które jest używane przez społeczność.
+Ponadto, powinna brać pod uwagę że kod źródłowy Ruby jest napisany w C (a więc, biblioteki standardowej nie możemy ``przeanalizować'') oraz w miarę możliwości fakt, że istnieją biblioteki korzystające z FFI (\textit{Foreign Function Interface}), a więc ich kod źródłowy jest napisany w innym języku (z reguły C).
+
+\chapter{Rozwiązanie}
+
+\section{Architektura}
+
+Architektura wtyczki jest dwuczęściowa:
+\begin{enumerate}
+\item Protokół komunikacji z edytorem tekstu
+\item Serwer, który dostarcza funkcjonalności, niezależny od edytora
+\end{enumerate}
+
+\subsection{Protokół komunikacji z edytorem tekstu}
+
+We wtyczce wykorzystywany jest LSP (\textit{Language Server Protocol}).
+Jest to protokół standaryzujący komunikację pomiędzy edytorami tekstu, a serwerami dostarczającymi informacji o projekcie.
+Dzięki temu, chcąc napisać serwer, który potrafi komunikować się z $n$ edytorami tekstu, wystarczy zaimplementować w tym serwerze protokół LSP, który wspiera edytor tekstu (również często przez oddzielną wtyczkę). Ta część jest czysto inżynieryjna, więc w dalszej części pracy skupię się tylko na algorytmach wykorzystywanych w serwerze.
+
+\section{Proces pozyskiwania informacji (?)}
+
+\subsection{Funkcjonalności}
+
+Przeanalizujmy jeszcze raz funkcjonalności, które chcielibyśmy uwzględnić w naszym serwerze. Pokażemy, że kluczowe jest:
+\begin{enumerate}
+\item Zebranie informacji o hierarchii klas, modułów oraz występujących w nich metod
+\item Wywnioskowanie ``typu'' (klasy, czasami coś więcej) zmiennych
+\end{enumerate}
+
+\subsubsection{Informacja o typie zmiennej}
+
+Informacja o typie sama przez się (przyp. kolokwializm?) jest informacją cenną dla programisty.
+Implementacja wynika bezpośrednio z (2).
+Mówimy o języku dynamicznie typowanym, więc w dalszej części pracy zostanie zdefiniowane czym jest typ, jednak ponieważ ruby jest językiem w pełni obiektowym i nie ma w nim typów prymitywnych, intuicyjnie typ możemy (z reguły, nie zawsze) powiązać z klasą obiektu, który jest przypisany do zmiennej.
+
+\subsubsection{Skok do definicji}
+
+Programista często dowiedzieć się jak wygląda definicja różnych bytów (?) w kodzie źródłowym:
+\begin{enumerate}
+\item definicja zmiennej lokalnej - nieskomplikowany przypadek i rzadko potrzebny, ponieważ krótkie metody z reguły powodują że definicja jest widoczna na pierwszy rzut oka
+\item definicja stałej - wbrew pozorom, nie jest to proste, ponieważ w rubim stałe mogą być przypisywane ponownie (sic) oraz reguły zagnieżdżania i referencji nie są łatwe (z reguły zrozumiałe przez osoby z kilkuletnim doświadczeniem)
+\item definicja metody - najtrudniejsza część, a jednocześnie najbardziej potrzebna. Będąc w kodzie źródłowym w miejscu wywołania metody, chcielibyśmy skoczyć do jej definicji. Metoda jest wywoływana na jakimś obiekcie, więc musimy znać ``typ'' zmiennej aby zlokalizować odpowiednią definicję.
+\end{enumerate}
+
+\subsubsection{Autouzupełnianie}
+
+Podobnie jak wyżej, musimy znać typ zmiennej aby wiedzieć jakie metody powinniśmy zasugerować programiście.
+
+\subsubsection{Refactoring}
+
+Aby móc przeprowadzać w miarę bezpieczne automatyczne zmiany kodu źródłowego, takie jak:
+\begin{itemize}
+\item Zmiana nazwy klasy (globalnie, w całym projekcie)
+\item Wydzielenie metody/zmiennej
+\item \textit{Inline} (?) metody/zmiennej
+\end{itemize}
+również potrzebujemy informacji o typie zmiennej (przyp. rozwinąć dlaczego).
+
+\subsection{Indeksowanie}
+
+Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowanie polega na:
+\begin{enumerate}
+\item Sparsowaniu pliku źródłowego do AST (\textit{abstract syntax tree})
+\item Przejście przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku.
+\item Uruchomienie funkcji wnioskującej typ wszystkich wierzchołków na podstawie informacji w grafie i hierarchii klas.
+\end{enumerate}
+
+\section{Budowanie grafu}
+
+(na razie mniej więcej wymienione części o których trzeba powiedzieć)
+
+\subsection{Wstęp}
+\subsection{Parę prostych przypadków, zmienne lokalne i literały}
+\subsection{Parę pozornie łatwych, a podłych przypadków}
+\subsection{Klasy, moduły i inne stałe}
+\subsection{Metody}
+\subsection{Dziedziczenie}
+\subsection{attr reader, private}
+\subsection{Wywołania metod}
+\subsection{Wywołania super}
+\subsection{Klasy singletonowe}
+\subsection{Include/extend/prepare}
+\subsection{Zmienne globalne instancji, klasowe, instancji klas}
+\subsection{Bloki / lambdy}
+\subsection{Struktury}
+\subsection{Biblioteka standardowa}
+
+\section{Wnioskowanie typu}
+
+W sporej części będą punkty jak wyżej, dodatkowo:
+
+\subsection{Typy}
+\subsection{Specjalny typ - Array/Tuple}
+\subsection{Specjalny typ - Hash}
+\subsection{Wywołania popularnych funkcji polimorficznych, Array.map}
+\subsection{Szczególne funkcje w Object}
+
+\section{Future work}
+
+\subsection{More metaprogramming intelligence}
+\subsection{Bundler, gems and libraries}
+\subsection{YARD}
+\subsection{Rust implementation}
+\subsection{Caching}
+\subsection{Tracking effects, ex. exceptions}
+\subsection{Tracepoint}
+
 
 %%%%% BIBLIOGRAFIA
 
