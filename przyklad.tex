@@ -168,7 +168,24 @@ Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowani
 (na razie mniej więcej wymienione części o których trzeba powiedzieć)
 
 \subsection{Wstęp}
-\subsection{Parę prostych przypadków, zmienne lokalne i literały}
+
+Graf który budujemy jest skierowany i może zawierać cykle. Wierzchołki są etykietowane, tj. każdy wierzchołek ma swój ``rodzaj'' oraz być może dodatkowe parametry (zależnie od rodzaju). Ponadto wierzchołek może mieć przypisaną lokalizację w kodzie źródłowym. Lokalizacja składa się ze ścieżki do pliku, pozycji początkowej w kodzie źródłowym (numer linii i numer kolumny) oraz pozycji końcowej w kodzie źródłowym. Krawędzie są nieetykietowane.
+
+\subsection{Literały}
+
+Na początek warto popatrzeć na najprostsze AST, czyli literały. AST literału liczby całkowitej (np. \texttt{42}) zostanie przekształcony na pojedyńczy wierzchołek rodzaju \texttt{int}. Rodzaj będzie potrzebny funkcji wnioskującej typy, która na podstawie rodzaju, dodatkowych parametrów wierzchołka oraz wierzchołków z krawędzi wejściowych będzie decydowała jakiego typu jest dany wierzchołek. W tym prostym przypadku nie zwracamy uwagi na krawędzie wejściowe (bo ich, z metody budowania grafu, dla wierzchołka tego rodzaju nawet nie będzie) tylko przypisujemy wszystkim wierzchołkom rodzaju \texttt{int} typ \texttt{Nominal(Integer)}.
+
+Tak samo jest z literałami: liczbami wymiernymi, zmiennopozycyjnymi, złożonymi oraz wartościami \texttt{true}, \texttt{false} oraz \texttt{nil}.
+
+Podobnie sytuacja ma się w przypadku literałów tekstowych oraz symboli. Drobna różnica jest taka, że tekst może być z interpolacją (np. \texttt{``foo\#\{somevariable\}bar''}), a w takim przypadku najpierw rekurencyjnie przetwarzamy wszystkie interpolowane (?) wyrażenia, ale na końcu i tak przypisujemy wierzchołkowi rodzaju \texttt{str} zawsze typ \texttt{Nominal(String)}. Analogicznie jest w przypadku symboli.
+
+\subsection{Literały tablic i słowników}
+
+Pierwszym ciekawym przypadkiem jest literał tablicy, np. \texttt{[42, ``string'']}. Dla takiego AST, najpierw budujemy wierzchołki dla wszystkich poddrzew - w tym przykładzie dostaniemy dwa wierzchołki, odpowiednio rodzaju \texttt{int} oraz \texttt{str}. Następnie dodajemy wierzchołek rodzaju \texttt{array}, który będzie wynikiem przetwarzania tego AST, oraz dodamy krawędzie z wierzchołków \texttt{int} i \texttt{str} do wierzchołka \texttt{array}.
+
+Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy na typy wszystkich wierzchołków krawędzi wejściowych, tworzy z nich jeden typ Union - w naszym przykładzie \texttt{Union(Integer or String)} oraz finalnie przypisuje temu wierzchołkowi typ \texttt{Array<Union(Integer or String)>}.
+
+
 \subsection{Parę pozornie łatwych, a podłych przypadków}
 \subsection{Klasy, moduły i inne stałe}
 \subsection{Metody}
