@@ -1,14 +1,14 @@
-\select@language {english}
-\select@language {polish}
-\select@language {english}
-\select@language {polish}
-\select@language {polish}
-\select@language {polish}
-\select@language {polish}
-\select@language {english}
-\select@language {polish}
-\select@language {english}
-\select@language {polish}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {polish}{}
+\babel@toc {polish}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
 \contentsline {chapter}{\numberline {1.}Wprowadzenie}{7}{chapter.1}
 \contentsline {section}{\numberline {1.1.}Za\IeC {\l }o\IeC {\.z}enia i cele}{7}{section.1.1}
 \contentsline {subsection}{\numberline {1.1.1.}Utrudnienia w j\IeC {\k e}zykach s\IeC {\l }abo typowanych}{7}{subsection.1.1.1}

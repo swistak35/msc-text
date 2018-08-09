@@ -45,57 +45,56 @@
 \chapter{Wprowadzenie}
 
 Współcześnie powstaje wiele narzędzi ułatwiających i przyśpieszających pracę programistów.
-W szczególności dla wielu języków programowania istnieją zintegrowane środowiska programistyczne (IDE), które próbują dostarczyć jak najwięcej takich narzędzi w jednym spójnym środowisku. Jednymi z najbardziej podstawowych funkcjonalności takich środowisk są:
+W szczególności istnieją zintegrowane środowiska programistyczne (IDE), które próbują dostarczyć jak najwięcej takich narzędzi w jednym spójnym środowisku. Wśród najbardziej podstawowych funkcjonalności takich środowisk można znaleźć m. in.:
 
 \begin{itemize}
-\item autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
 \item skok do definicji (stałej, funkcji lub zmiennej)
 \item informacja o typie zmiennej
+\item autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
 \item refactoring - zmiana nazwy klasy (globalnie, w całym projekcie), wydzielenie metody, zmiennej, etc.
 \end{itemize}
 
-Niniejsza praca przedstawia jak można wykorzystać analizę statyczną plików źródłowych, aby dostarczyć powyższe funkcjonalności w języku Ruby, który z racji swojej dynamicznej natury stawia pewne problemy mało istotne w językach statycznie typowanych.
+Niniejsza praca przedstawia jak można wykorzystać analizę statyczną plików źródłowych, aby dostarczyć powyższe funkcjonalności w języku Ruby, który z racji swojej dynamicznej natury stawia pewne problemy nie występujące w językach statycznie typowanych.
 
 \section{Założenia i cele}
 
 \subsection{Utrudnienia w językach słabo typowanych}
 
 Zintegrowane środowiska nie są niczym nowym i są popularne wśród programistów od wielu lat.
-Jednakże, implementacja narzędzi bazujących na analizie kodu źródłowego zależy od niektórych cech języków programowania.
-W językach silnie typowanych jest to znacznie prostsze, ponieważ gdy wiemy już jakiego typu jest zmienna - lista dostępnych nazw funkcji jest łatwa do obliczenia (autouzupełnianie).
+Jednakże, trudność implementacji narzędzi bazujących na analizie kodu źródłowego zależy od niektórych cech języków programowania.
+W językach silnie typowanych jest to znacznie prostsze, ponieważ gdy wiemy już jakiego typu jest zmienna -- lista dostępnych nazw funkcji jest łatwa do obliczenia (autouzupełnianie, skok do definicji). 
 Podobnie, języki silnie typowane często mają \textit{static dispatch}, więc w momencie kompilacji wiemy gdzie jest kod źródłowy, który zostanie użyty w danym wywołaniu funkcji (skok do definicji).
-Oczywiście, w każdym języku możemy używać konstrukcji (np. w C, wywołanie funkcji która jest przechowana we wskaźniku), które to zadanie znacznie utrudniają, ale nie używa się ich zbyt często.
+Oczywiście, w każdym języku możemy używać konstrukcji, które to zadanie znacznie utrudniają (np. w C, wywołanie funkcji która jest przechowana we wskaźniku), ale nie używa się ich zbyt często.
 W językach dynamicznie typowanych (takich jak Ruby, Python), gdzie język nie dostarcza kompilatora, który dostarczałby informacji o kodzie źródłowym, informacje te musimy sobie znaleźć sami.
 
 \subsection{Utrudnienia w Ruby}
 
-W języku Ruby, o którym jest ta praca, statyczne wywnioskowanie definicji jest szczególnie ciężkie z dwóch powodów:
+W języku Ruby, o którym jest ta praca, statyczne wywnioskowanie typu wyrażenia jest szczególnie ciężkie z dwóch powodów:
 \begin{itemize}
-\item wielu różnych dostępnych konstrukcji języka, takich jak wielokrotne dziedziczenie, klasy singletonowe, \textit{prepend} (przypis: nie wiem jak ten mechanizm się nazywa w nomenklaturze języków programowania), metaprogramowanie, które pozwalają na tworzenie skomplikowanych obiektów i hierarchii klas
-\item społeczności rubiego, która w udostępnianych bibliotekach oraz projektach chętnie korzysta z tych skomplikowanych konstrukcji oraz metaprogramowania. Z jednej strony, duża ekspresja języka pozwala na szybkie wytwarzanie oprogramowania, z drugiej strony, analiza statyczna kodu, a nawet analiza kodu przez programistę jest trudniejsza (problemy podobne, z którymi zmagał się Smalltalk)
+\item wiele różnych dostępnych konstrukcji języka, takich jak wielokrotne dziedziczenie, klasy singletonowe, \textit{prepend} (przypis: nie wiem jak ten mechanizm się nazywa w nomenklaturze języków programowania) sprawia że zbudowanie hierarchii klas i poruszanie się po niej jest niełatwe
+\item społeczność rubiego jest przyzwyczajona do korzystania z metaprogramowania w bibliotekach i projektach, a dynamicznie generowane (w czasie uruchomienia programu) nazwy zmiennych, metod oraz klas sprawiają że efektywna statyczna analiza tych fragmentów kodu jest niemożliwa
 \end{itemize}
 
 \subsection{Aktualny stan}
 
-Do tworzenia oprogramowania w Ruby, programiści najczęściej wykorzystują Rubymine, Vim, Emacs, Atom (przypis: strzał na razie, ale nic istotnego to nie zmieni).
-Rubymine jest jedynym IDE w tym rankingu, pozostałe narzędzia to tylko edytory tekstu, wspierane wtyczkami.
+Do tworzenia oprogramowania w Ruby, programiści najczęściej wykorzystują Rubymine IDE lub edytory tekstu wspierane wtyczkami, takie jak Vim, Emacs czy Atom (przypis: strzał na razie, ale nic istotnego to nie zmieni).
 Rubymine dostarcza funkcjonalności wspomnianych we wstępie, jednak jest to narzędzie płatne i zamknięte.
-Edytory tekstu same w sobie nie posiadają tych funkcjonalności, ale istnieją wtyczki, które w jakiejś części te funkcjonalności dostarczają. Jak to bywa z analizą statyczną, efektywność tych narzędzi to pewne spektrum, jedne narzędzia dostarczają lepsze autouzupełnianie, a inne gorsze, nie jest to binarne i jakość tych funkcjonalności ma duże znaczenie dla programisty.
+Edytory tekstu same w sobie nie posiadają tych funkcjonalności, ale istnieją wtyczki, które w jakiejś części te funkcjonalności dostarczają. Jak to bywa z analizą statyczną, efektywność tych narzędzi to pewne spektrum, jedne narzędzia dostarczają lepsze autouzupełnianie, a inne gorsze. Nie jest to binarne i jakość tych funkcjonalności ma duże znaczenie dla programisty.
 Najpopularniejsze wtyczki to:
 \begin{itemize}
 \item CTags - zbiera symbole z całego projektu i ich lokalizacje, nie radzi sobie w żaden sposób z metaprogramowaniem i nie potrafi dostarczyć tych funkcjonalności zależnie od kontekstu (np. skok do definicji metody zależy od miejsca, w którym ją się wywołuje)
 \item Robe - dostarcza informacje zależne od kontekstu, ale wykorzystuje bardzo proste heurystyki do zawężenia wyników
 \item Solargraph - dostarcza podobne funkcjonalności do tych wymienionych we wstępie (oprócz \textit{refactoringu}), stosuje do tego analizę statyczną oraz wykorzystuje inne źródła (takie jak dokumentacja YARD)
-\item RGL - odmiennie od pozostałych narzędzi, dostarcza system typów i inferencję typów do ruby. Wymaga jednak adnotacji klas i metod, tj. inferencja typów zachodzi tylko w ``otypowanych'' przez programistę metodach.
+\item RGL - odmiennie od pozostałych narzędzi, dostarcza system typów i inferencję typów do Ruby. Wymaga jednak adnotacji klas i metod, tj. inferencja typów zachodzi tylko w ``otypowanych'' przez programistę metodach.
 \end{itemize}
 
 \subsection{Założenia i cele}
 
 Celem pracy jest napisanie wtyczki działającej w zwykłych edytorach tekstu, która będzie oferować narzędzia wspierające pracę programisty.
-Nie powinna wymagać od programisty zaawansowanej konfiguracji oraz żadnej pracy ze strony programisty (w szczególności pisania adnotacji typów).
+Nie powinna wymagać od programisty zaawansowanej konfiguracji oraz żadnego wkładu ze strony programisty (w szczególności pisania adnotacji typów).
 Powinna dostarczyć jak najbardziej trafne informacje, głównie wykorzystując analizę statyczną, ale również inne źródła, jeśli jest to możliwe.
 Informacje dostarczane przez wtyczkę niekoniecznie muszą być bezpieczne (w rozumieniu bezpiecznej analizy statycznej), bo jest to tylko wsparcie programisty, pozwalające sprawniej mu się poruszać po kodzie i go pisać.
-Powinna brać pod uwagę praktyczne problemy wynikające nie tylko z technicznych zawiłości języka, ale również praktycznych.
+Powinna brać pod uwagę jaki kod jest często produkowany (a więc -- z którym programiści muszą pracować na co dzień), nawet jeżeli jest to kod niekoniecznie dobrej jakości.
 W szczególności, powinna jak najlepiej sobie radzić z metaprogramowaniem, które jest używane przez społeczność.
 Ponadto, powinna brać pod uwagę że kod źródłowy Ruby jest napisany w C (a więc, biblioteki standardowej nie możemy ``przeanalizować'') oraz w miarę możliwości fakt, że istnieją biblioteki korzystające z FFI (\textit{Foreign Function Interface}), a więc ich kod źródłowy jest napisany w innym języku (z reguły C).
 
@@ -112,37 +111,35 @@ Architektura wtyczki jest dwuczęściowa:
 \subsection{Protokół komunikacji z edytorem tekstu}
 
 We wtyczce wykorzystywany jest LSP (\textit{Language Server Protocol}).
-Jest to protokół standaryzujący komunikację pomiędzy edytorami tekstu, a serwerami dostarczającymi informacji o projekcie.
+Jest to protokół standaryzujący komunikację pomiędzy edytorami tekstu a serwerami dostarczającymi informacji o projekcie.
 Dzięki temu, chcąc napisać serwer, który potrafi komunikować się z $n$ edytorami tekstu, wystarczy zaimplementować w tym serwerze protokół LSP, który wspiera edytor tekstu (również często przez oddzielną wtyczkę). Ta część jest czysto inżynieryjna, więc w dalszej części pracy skupię się tylko na algorytmach wykorzystywanych w serwerze.
 
 \section{Proces pozyskiwania informacji (?)}
 
 \subsection{Funkcjonalności}
 
-Przeanalizujmy jeszcze raz funkcjonalności, które chcielibyśmy uwzględnić w naszym serwerze. Pokażemy, że kluczowe jest:
+Przeanalizujmy jeszcze raz funkcjonalności, które chcielibyśmy uwzględnić w naszym serwerze. Pokażemy, że kluczowe  dla ich zaimplementowania są dwa zadania:
 \begin{enumerate}
-\item Zebranie informacji o hierarchii klas, modułów oraz występujących w nich metod
+\item Zebranie informacji o hierarchii klas, modułów oraz występujących w nich metodach
 \item Wywnioskowanie ``typu'' (klasy, czasami coś więcej) zmiennych
 \end{enumerate}
 
 \subsubsection{Informacja o typie zmiennej}
 
-Informacja o typie sama przez się (przyp. kolokwializm?) jest informacją cenną dla programisty.
-Implementacja wynika bezpośrednio z (2).
-Mówimy o języku dynamicznie typowanym, więc w dalszej części pracy zostanie zdefiniowane czym jest typ, jednak ponieważ ruby jest językiem w pełni obiektowym i nie ma w nim typów prymitywnych, intuicyjnie typ możemy (z reguły, nie zawsze) powiązać z klasą obiektu, który jest przypisany do zmiennej.
+Już sama informacja o typie jest cenna dla programisty. Implementacja przedstawienia tego typu programiście wynika bezpośrednio z (2).
+Mówimy o języku dynamicznie typowanym, więc w dalszej części pracy zostanie zdefiniowane czym jest typ. Ponieważ ruby jest językiem w pełni obiektowym i nie ma w nim typów prymitywnych, intuicyjnie typ możemy (z reguły, nie zawsze) powiązać z klasą obiektu, który jest przypisany do zmiennej.
 
 \subsubsection{Skok do definicji}
 
-Programista często dowiedzieć się jak wygląda definicja różnych bytów (?) w kodzie źródłowym:
-\begin{enumerate}
-\item definicja zmiennej lokalnej - nieskomplikowany przypadek i rzadko potrzebny, ponieważ krótkie metody z reguły powodują że definicja jest widoczna na pierwszy rzut oka
-\item definicja stałej - wbrew pozorom, nie jest to proste, ponieważ w rubim stałe mogą być przypisywane ponownie (sic) oraz reguły zagnieżdżania i referencji nie są łatwe (z reguły zrozumiałe przez osoby z kilkuletnim doświadczeniem)
-\item definicja metody - najtrudniejsza część, a jednocześnie najbardziej potrzebna. Będąc w kodzie źródłowym w miejscu wywołania metody, chcielibyśmy skoczyć do jej definicji. Metoda jest wywoływana na jakimś obiekcie, więc musimy znać ``typ'' zmiennej aby zlokalizować odpowiednią definicję.
-\end{enumerate}
+Programista często chce dowiedzieć się jak wyglądają definicje różnych bytów, takich jak zmienne lokalne, stałe czy metody w kodzie źródłowym.
+
+Przypadek zmiennej lokalnej jest nieskomplikowany i rzadko potrzebny, ponieważ krótkie metody z reguły powodują że definicja jest widoczna na pierwszy rzut oka. Inaczej jest w przypadku stałej. Wbrew pozorom, odszukanie takiej definicji nie jest proste, ponieważ w Rubim stałe mogą być przypisywane ponownie (sic), a reguły zagnieżdżania i referencji nie są łatwe (z reguły są zrozumiałe dla osób z kilkuletnim doświadczeniem).
+
+Jednak najtrudniejszą część, a jednocześnie najbardziej potrzebną jest skok do definicji metody. Metoda jest wywoływana na jakimś obiekcie, więc musimy znać ``typ'' zmiennej aby zlokalizować odpowiednią definicję.
 
 \subsubsection{Autouzupełnianie}
 
-Podobnie jak wyżej, musimy znać typ zmiennej aby wiedzieć jakie metody powinniśmy zasugerować programiście.
+Pisząc kod, programista chce uniknąć napisania błędnej nazwy metody i pomaga w tym funkcjonalność autouzupełniania. Polega ono na wyświetleniu listy metod które można wywołać na danym wyrażeniu. Podobnie jak w przypadku skoku do definicji, aby wiedzieć jakie metody zaproponować programiście, musimy znać jak najdokładniej typ wyrażenia.
 
 \subsubsection{Refactoring}
 
@@ -156,16 +153,14 @@ również potrzebujemy informacji o typie zmiennej (przyp. rozwinąć dlaczego).
 
 \subsection{Indeksowanie}
 
-Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowanie polega na:
+Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowanie to spora część frontendu typowego interpretera, zawierający analizę leksykalną, składniową i semantyczną. Proces ten polega na trzech etapach:
 \begin{enumerate}
 \item Sparsowaniu pliku źródłowego do AST (\textit{abstract syntax tree})
-\item Przejście przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku.
+\item Przejście przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz jednocześnie zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku.
 \item Uruchomienie funkcji wnioskującej typ wszystkich wierzchołków na podstawie informacji w grafie i hierarchii klas.
 \end{enumerate}
 
 \section{Budowanie grafu}
-
-(na razie mniej więcej wymienione części o których trzeba powiedzieć)
 
 \subsection{Wstęp}
 
@@ -173,22 +168,38 @@ Graf który budujemy jest skierowany i może zawierać cykle. Wierzchołki są e
 
 \subsection{Literały}
 
-Na początek warto popatrzeć na najprostsze AST, czyli literały. AST literału liczby całkowitej (np. \texttt{42}) zostanie przekształcony na pojedyńczy wierzchołek rodzaju \texttt{int}. Rodzaj będzie potrzebny funkcji wnioskującej typy, która na podstawie rodzaju, dodatkowych parametrów wierzchołka oraz wierzchołków z krawędzi wejściowych będzie decydowała jakiego typu jest dany wierzchołek. W tym prostym przypadku nie zwracamy uwagi na krawędzie wejściowe (bo ich, z metody budowania grafu, dla wierzchołka tego rodzaju nawet nie będzie) tylko przypisujemy wszystkim wierzchołkom rodzaju \texttt{int} typ \texttt{Nominal(Integer)}.
+Na początek warto popatrzeć na najprostsze AST, czyli literały. AST literału liczby całkowitej (np. \texttt{42}) zostanie przekształcony na pojedyńczy wierzchołek rodzaju \texttt{int}. Rodzaj będzie potrzebny funkcji wnioskującej typy, która na podstawie rodzaju, dodatkowych parametrów wierzchołka oraz wierzchołków z krawędzi wejściowych będzie decydowała jakiego typu jest dany wierzchołek. W tym prostym przypadku wierzchołek nie ma żadnych parametrów i nie zwracamy uwagi na krawędzie wejściowe (bo ich, z metody budowania grafu, dla wierzchołka tego rodzaju nawet nie będzie) tylko przypisujemy wszystkim wierzchołkom rodzaju \texttt{int} typ \texttt{Nominal(Integer)}.
 
-Tak samo jest z literałami: liczbami wymiernymi, zmiennopozycyjnymi, złożonymi oraz wartościami \texttt{true}, \texttt{false} oraz \texttt{nil}.
+Tak samo jest z literałami liczbami wymiernych, zmiennopozycyjnych, zespolonych oraz wartości \texttt{true}, \texttt{false} oraz \texttt{nil}.
 
-Podobnie sytuacja ma się w przypadku literałów tekstowych oraz symboli. Drobna różnica jest taka, że tekst może być z interpolacją (np. \texttt{``foo\#\{somevariable\}bar''}), a w takim przypadku najpierw rekurencyjnie przetwarzamy wszystkie interpolowane (?) wyrażenia, ale na końcu i tak przypisujemy wierzchołkowi rodzaju \texttt{str} zawsze typ \texttt{Nominal(String)}. Analogicznie jest w przypadku symboli.
+Podobnie sytuacja ma się w przypadku literałów tekstowych (wierzchołek rodzaju \texttt{str}) oraz symboli (wierzchołek rodzaju \texttt{sym}). Drobna różnica jest taka, że tekst może być z interpolacją (np. \texttt{``foo\#\{somevariable\}bar''}), a w takim przypadku najpierw rekurencyjnie przetwarzamy wszystkie interpolowane (?) wyrażenia, ponieważ typ wyrażeń interpolowanych też może być potrzebny programiście. Jednakże, funkcja wnioskująca przypisuje wierzchołkowi rodzaju \texttt{str} zawsze typ \texttt{Nominal(String)} niezależnie od krawędzi wejściowych. Analogicznie jest w przypadku symboli.
 
 \subsection{Literały tablic i słowników}
 
 Pierwszym ciekawym przypadkiem jest literał tablicy, np. \texttt{[42, ``string'']}. Dla takiego AST, najpierw budujemy wierzchołki dla wszystkich poddrzew - w tym przykładzie dostaniemy dwa wierzchołki, odpowiednio rodzaju \texttt{int} oraz \texttt{str}. Następnie dodajemy wierzchołek rodzaju \texttt{array}, który będzie wynikiem przetwarzania tego AST, oraz dodamy krawędzie z wierzchołków \texttt{int} i \texttt{str} do wierzchołka \texttt{array}.
 
-Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy na typy wszystkich wierzchołków krawędzi wejściowych, tworzy z nich jeden typ Union - w naszym przykładzie \texttt{Union(Integer or String)} oraz finalnie przypisuje temu wierzchołkowi typ \texttt{Array<Union(Integer or String)>}.
+Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy na typy wszystkich wierzchołków krawędzi wejściowych, tworzy z nich jeden typ Union -- w naszym przykładzie \texttt{Union(Integer or String)} oraz finalnie przypisuje temu wierzchołkowi typ parametryzowany \texttt{Generic(Array)<Union(Integer or String)>}.
 
+\subsection{Zmienne globalne}
 
-\subsection{Parę pozornie łatwych, a podłych przypadków}
-\subsection{Klasy, moduły i inne stałe}
+\subsection{Klasy i moduły}
+
+Funkcja budująca graf, przyjmuje jako zależność instancję Bazy danych - na początku przetwarzania projektu pustą. W bazie przechowujemy wszystkie informacje, które pozwalają nam szybko odpowiadać na żądania, które wysyła do nas użytkownik. Dlatego też przechowujemy tam informacje np. o znalezionych definicjach stałych i metod.
+
+Podczas przechodzenia przez AST pliku, przetwarzając wierzchołek definicji klasy lub modułu, zapisujemy tę definicję w bazie. W Ruby klasa (i moduł) są wartościami, więc odrębnie zapisujemy definicję klasy (i informację np. o jej rodzicu), a oddzielnie fakt, że klasa ta została przypisana do pewnej stałej. Pozwala to na wspieranie otwartych klas, oraz w przyszłości (przyp: mogę w sobie w pracy magisterskiej mówić o 'przyszlosci'?) klas/modułów anonimowych.
+
+Funkcja budująca graf ma też kontekst, który przechowuje kilka informacji o aktualnym stanie budowania grafu. Po pierwsze, wie w jakim zagnieżdżeniu klas / modułów jesteśmy, oraz jeżeli aktualnie przetwarzamy definicję metody, to co to jest za metoda. Ponadto, mamy słownik mapujący identyfikatory obecnych zmiennych lokalnych do ich możliwych definicji (w stylu klasycznej analizy statycznej \textit{Reaching Definitions}). Wreszcie, trzymamy też krótką informację o aktualnie zadeklarowanej widzialności definiowanych metod (publiczne, prywatne lub chronione).
+
+\subsection{Inne stałe}
+
+Ponieważ zdefiniowane stałe mają domyślnie globalną widzialność oraz mogą być przypisywane ponownie, ich przypisywanie nie różni się bardzo od zwykłych zmiennych globalnych. Po pierwsze, odróżnia je to, że nie są prostym identyfikatorem (jak \texttt{\$foo}), ale złożonym z kilku, niekoniecznie statycznych (jeśli \texttt{x = Foo} to \texttt{x::Bar} jest poprawną referencją do \texttt{Foo::Bar}), więc wymagają specjalnych struktur danych w bazie, algorytmu rozwiązywania tych referencji i (przez to, że referencje mogą być dynamiczne) niekoniecznie są zawsze obliczalne w statycznej analizie.
+
+Jest to też pierwsze miejsce, w którym stosujemy heurystyki bazujące na popularnych idiomach w Ruby. Przykładowo, w wyrażeniu \texttt{NetworkError = Class.new(StandardError)} najpierw tworzymy klasę anonimową dziedziczącą po klasie \texttt{StandardError}, a następnie przypisujemy ją do stałej \texttt{NetworkError}. Normalnie, nie wiedzielibyśmy o tym, że \texttt{NetworkError} jest klasą (bo nie śledzimy wartości), ale stosujemy heurystykę szukającą wyrażenia wg wzoru \texttt{X = Class.new(Y)}.
+
 \subsection{Metody}
+
+
+
 \subsection{Dziedziczenie}
 \subsection{attr reader, private}
 \subsection{Wywołania metod}
