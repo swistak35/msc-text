@@ -29,30 +29,31 @@
 \contentsline {subsection}{\numberline {2.3.1.}Wst\IeC {\k e}p}{13}{subsection.2.3.1}
 \contentsline {subsection}{\numberline {2.3.2.}Litera\IeC {\l }y}{13}{subsection.2.3.2}
 \contentsline {subsection}{\numberline {2.3.3.}Litera\IeC {\l }y tablic i s\IeC {\l }ownik\IeC {\'o}w}{14}{subsection.2.3.3}
-\contentsline {subsection}{\numberline {2.3.4.}Par\IeC {\k e} pozornie \IeC {\l }atwych, a pod\IeC {\l }ych przypadk\IeC {\'o}w}{15}{subsection.2.3.4}
-\contentsline {subsection}{\numberline {2.3.5.}Klasy, modu\IeC {\l }y i inne sta\IeC {\l }e}{15}{subsection.2.3.5}
-\contentsline {subsection}{\numberline {2.3.6.}Metody}{15}{subsection.2.3.6}
-\contentsline {subsection}{\numberline {2.3.7.}Dziedziczenie}{15}{subsection.2.3.7}
-\contentsline {subsection}{\numberline {2.3.8.}attr reader, private}{15}{subsection.2.3.8}
-\contentsline {subsection}{\numberline {2.3.9.}Wywo\IeC {\l }ania metod}{15}{subsection.2.3.9}
-\contentsline {subsection}{\numberline {2.3.10.}Wywo\IeC {\l }ania super}{15}{subsection.2.3.10}
-\contentsline {subsection}{\numberline {2.3.11.}Klasy singletonowe}{15}{subsection.2.3.11}
-\contentsline {subsection}{\numberline {2.3.12.}Include/extend/prepare}{15}{subsection.2.3.12}
-\contentsline {subsection}{\numberline {2.3.13.}Zmienne globalne instancji, klasowe, instancji klas}{15}{subsection.2.3.13}
-\contentsline {subsection}{\numberline {2.3.14.}Bloki / lambdy}{15}{subsection.2.3.14}
-\contentsline {subsection}{\numberline {2.3.15.}Struktury}{15}{subsection.2.3.15}
-\contentsline {subsection}{\numberline {2.3.16.}Biblioteka standardowa}{15}{subsection.2.3.16}
-\contentsline {section}{\numberline {2.4.}Wnioskowanie typu}{15}{section.2.4}
-\contentsline {subsection}{\numberline {2.4.1.}Typy}{16}{subsection.2.4.1}
-\contentsline {subsection}{\numberline {2.4.2.}Specjalny typ - Array/Tuple}{16}{subsection.2.4.2}
-\contentsline {subsection}{\numberline {2.4.3.}Specjalny typ - Hash}{16}{subsection.2.4.3}
-\contentsline {subsection}{\numberline {2.4.4.}Wywo\IeC {\l }ania popularnych funkcji polimorficznych, Array.map}{16}{subsection.2.4.4}
-\contentsline {subsection}{\numberline {2.4.5.}Szczeg\IeC {\'o}lne funkcje w Object}{16}{subsection.2.4.5}
-\contentsline {section}{\numberline {2.5.}Future work}{16}{section.2.5}
-\contentsline {subsection}{\numberline {2.5.1.}More metaprogramming intelligence}{16}{subsection.2.5.1}
-\contentsline {subsection}{\numberline {2.5.2.}Bundler, gems and libraries}{16}{subsection.2.5.2}
-\contentsline {subsection}{\numberline {2.5.3.}YARD}{16}{subsection.2.5.3}
-\contentsline {subsection}{\numberline {2.5.4.}Rust implementation}{16}{subsection.2.5.4}
-\contentsline {subsection}{\numberline {2.5.5.}Caching}{16}{subsection.2.5.5}
-\contentsline {subsection}{\numberline {2.5.6.}Tracking effects, ex. exceptions}{16}{subsection.2.5.6}
-\contentsline {subsection}{\numberline {2.5.7.}Tracepoint}{16}{subsection.2.5.7}
+\contentsline {subsection}{\numberline {2.3.4.}Zmienne globalne}{14}{subsection.2.3.4}
+\contentsline {subsection}{\numberline {2.3.5.}Klasy i modu\IeC {\l }y}{14}{subsection.2.3.5}
+\contentsline {subsection}{\numberline {2.3.6.}Inne sta\IeC {\l }e}{15}{subsection.2.3.6}
+\contentsline {subsection}{\numberline {2.3.7.}Metody}{15}{subsection.2.3.7}
+\contentsline {subsection}{\numberline {2.3.8.}Zmienne lokalne}{15}{subsection.2.3.8}
+\contentsline {subsection}{\numberline {2.3.9.}Dziedziczenie}{16}{subsection.2.3.9}
+\contentsline {subsection}{\numberline {2.3.10.}Zmienne instancji}{16}{subsection.2.3.10}
+\contentsline {subsection}{\numberline {2.3.11.}attr reader, private}{16}{subsection.2.3.11}
+\contentsline {subsection}{\numberline {2.3.12.}Widzialno\IeC {\'s}\IeC {\'c} metod}{17}{subsection.2.3.12}
+\contentsline {subsection}{\numberline {2.3.13.}Wywo\IeC {\l }ania metod}{17}{subsection.2.3.13}
+\contentsline {subsection}{\numberline {2.3.14.}Wywo\IeC {\l }ania super}{17}{subsection.2.3.14}
+\contentsline {subsection}{\numberline {2.3.15.}Bloki i lambdy}{18}{subsection.2.3.15}
+\contentsline {subsection}{\numberline {2.3.16.}Biblioteka standardowa}{18}{subsection.2.3.16}
+\contentsline {subsection}{\numberline {2.3.17.}self}{18}{subsection.2.3.17}
+\contentsline {subsection}{\numberline {2.3.18.}Named arguments}{18}{subsection.2.3.18}
+\contentsline {section}{\numberline {2.4.}Wnioskowanie typu}{18}{section.2.4}
+\contentsline {subsection}{\numberline {2.4.1.}Heurystyki obs\IeC {\l }ugi wywo\IeC {\l }a\IeC {\'n}}{19}{subsection.2.4.1}
+\contentsline {subsubsection}{Metoda klasowa}{20}{section*.6}
+\contentsline {subsubsection}{Konstruktor}{20}{section*.7}
+\contentsline {subsubsection}{Lambda}{20}{section*.8}
+\contentsline {section}{\numberline {2.5.}Future work}{20}{section.2.5}
+\contentsline {subsection}{\numberline {2.5.1.}More metaprogramming intelligence}{20}{subsection.2.5.1}
+\contentsline {subsection}{\numberline {2.5.2.}Bundler, gems and libraries}{20}{subsection.2.5.2}
+\contentsline {subsection}{\numberline {2.5.3.}YARD}{20}{subsection.2.5.3}
+\contentsline {subsection}{\numberline {2.5.4.}Rust implementation}{20}{subsection.2.5.4}
+\contentsline {subsection}{\numberline {2.5.5.}Caching}{20}{subsection.2.5.5}
+\contentsline {subsection}{\numberline {2.5.6.}Tracking effects, ex. exceptions}{20}{subsection.2.5.6}
+\contentsline {subsection}{\numberline {2.5.7.}Tracepoint}{20}{subsection.2.5.7}

@@ -182,6 +182,8 @@ Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy n
 
 \subsection{Zmienne globalne}
 
+W ogólności nie możemy wiedzieć w jakiej kolejności zostaną zmienne globalne, więc zakładamy, że w momencie referencji zmiennej globalnej jej wartość może pochodzić z dowolnego przypisania tej zmiennej w całym kodzie źródłowym. W tym celu, dla każdego identyfikatora (nie wystąpienia!) zmiennej globalnej tworzymy specjalny wierzchołek rodzaju \texttt{gvar\_definition}. Za każdym razem gdy przetwarzamy przypisanie jakiejś wartości do danej zmiennej globalnej, tworzymy krawędź od tej wartości, do danego wierzchołka \texttt{gvar\_definition}. Odpowiednio, przetwarzając referencję zmiennej globalnej, tworzymy krawędź od \texttt{gvar\_definition} do tej wartości. W ten sposób, funkcja wnioskująca typy przekaże wszystkie możliwe przypisania danej zmiennej globalnej do wszystkich ich wystąpień w programie.
+
 \subsection{Klasy i moduły}
 
 Funkcja budująca graf, przyjmuje jako zależność instancję Bazy danych - na początku przetwarzania projektu pustą. W bazie przechowujemy wszystkie informacje, które pozwalają nam szybko odpowiadać na żądania, które wysyła do nas użytkownik. Dlatego też przechowujemy tam informacje np. o znalezionych definicjach stałych i metod.
@@ -198,28 +200,109 @@ Jest to też pierwsze miejsce, w którym stosujemy heurystyki bazujące na popul
 
 \subsection{Metody}
 
+Podobnie jak jest to ze stałymi, podczas budowania grafu zapisujemy znalezione definicje metod. Dokładniej, zapisujemy nazwę, identyfikator definicji klasy/modułu wewnątrz której została metoda zdefiniowana, argumenty formalne, widoczność, oraz lokalizację w pliku. Zapisujemy też w bazie wierzchołki odpowiadające argumentom formalnym i wartości zwracanej przez metodę.
 
+\subsection{Zmienne lokalne}
+
+Tak jak zostało to wspomniane, wierzchołki o przypisaniach zmiennych lokalnych są przechowywane w kontekście w postaci podobnej do klasycznej statycznej analizy \textit{Reaching Definitions}, więc są dość dokładne.
 
 \subsection{Dziedziczenie}
+
+Ruby wspiera wiele rodzajów dziedziczenia, ale poszczególne konstrukty nie są od siebie istotnie różne. Jednak ponieważ to po czym dziedziczymy, składniowo, nie musi być identyfikatorem, ale może być dowolnym wyrażeniem (więc poprawne są konstrukty typu \texttt{class Foo < \$x} czy {class Foo < self}), znowu niemożliwa jest w pełni poprawna analiza. Aktualnie ograniczamy się tylko do obsługiwania sytuacji gdy to po czym dziedziczymy jest poprawnym identyfikatorem stałej, w przeciwnym wypadku ignorujemy to wyrażenie. W przyszłości łatwo można by wprowadzić heurystykę pozwalającą np. na dziedziczenie po strukturach (\texttt{class Foo < Struct.new(:field)}), ponieważ jest kilka takich idiomatycznych przypadków w których dziedziczymy po wyrażeniach nie będących identyfikatorami.
+
+\subsection{Zmienne instancji}
+
+Skoro Ruby jest językiem obiektowym, nie może zabraknąć zmiennych instancji. Aktualnie traktujemy je w podobny sposób jak zmienne globalne - nie próbujemy śledzić dokładnego flow, tylko zbieramy wszystkie możliwe przypisania zmiennych instancji, wszystkie możliwe użycia, i je łączymy ze sobą przez wierzchołek pośredni \texttt{ivar\_definition}. Aktualnie ignorujemy fakt, że zmienna \texttt{@x} w klasie \texttt{Foo} i \texttt{Bar} jest tą samą zmienną, jeśli \texttt{Bar} jest rodzicem \texttt{Foo}, ale łatwo rozszerzyć kod o tę funkcjonalność (przyp: może to jeszcze zrobię w sumie, bo szkoda tego tłumaczenia).
+
+
 \subsection{attr reader, private}
+
+Są w Ruby metody \textit{klasowe} (tj. metody działające na tzw. \textit{eigenclass} danej klasy, a nie instancji), które definiują inne metody, więc są już de facto metaprogramowaniem.
+W bibliotece standardowej Rubiego najpopularniejsze to \texttt{attr\_reader} i \texttt{attr\_writer}.
+\texttt{attr\_reader(:foo)} definiuje metodę odczytującą zmienną instancji, o takiej samej nazwie, jest więc odpowiednikiem kodu \texttt{def foo; @foo; end}. Oczywiście, \texttt{attr\_reader} przyjmuje dowolną liczbę argumentów, więc szybko można za jego pomocą zdefiniować wiele takich funkcji.
+
+Tutaj funkcja budująca ucieka się do heurystyki wykrywającej użycie funkcji o nazwie \texttt{attr\_reader} i zamiast uznawać to wywołanie za zwykłe wywołanie metody, definiuje odpowiednią metodę dla każdego argumentu. Dodatkowo, ustawia lokalizację występowania definicji tak zdefiniowanej metody na linijkę z \texttt{attr\_reader}, więc programista, który użyje skoku do definicji łatwo dowie się, że metoda ta jest definiowana za pomocą \texttt{attr\_reader}. Bardzo podobnie jest z metodą \texttt{attr\_writer}, która definiuje przypisanie do zmiennej instancji (tzw. \textit{setter}).
+
+\subsection{Widzialność metod}
+
+W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to - posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy są mogą prawdopodobnie pojawić się w produkcyjnych programach -- natknąłem się na ten problem osobiście (przyp: nie wiem czy powinienem pisać takie rzeczy, w pierwszej osobie). Jednak z braku lepszego rozwiązania, stosujemy tutaj też również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
+
+
 \subsection{Wywołania metod}
+
+Pomimo tego, że jest to prawdopodobnie najważniejszy AST, jego analiza podczas budowania grafu nie jest bardzo skomplikowana. Funkcja budująca przetwarza rekurencyjnie obiekt na którym wywoływana jest metoda, przekazywane argumenty oraz tworzy dodatkowy wierzchołek na wynik tej metody. Następnie wszystkie te wierzchołki łączy w rekord i wrzuca do kolejki wywołań. Kolejka ta będzie używana dopiero podczas typowania.
+
 \subsection{Wywołania super}
-\subsection{Klasy singletonowe}
-\subsection{Include/extend/prepare}
-\subsection{Zmienne globalne instancji, klasowe, instancji klas}
-\subsection{Bloki / lambdy}
-\subsection{Struktury}
+
+Wywołania super dzielą się na dwa rodzaje (i są to dwa różne wierzchołki AST). Pierwszy to zwykłe wywołanie \texttt{super(args)} znane z innych języków programowania, wywołujące odpowiadającą metodę z definicji rodzica i przekazującą podane do \texttt{super} argumenty. Analiza tego wywołania jest bardzo podobna do zwykłego wywołania metody poza tym, że do rekordu wywołania dopisujemy jeszcze identyfikator aktualnie przetwarzanej metody, aby łatwo znaleźć rodzica i odpowiadającą w nim metodę. Drugi rodzaj wywołania jest bezargumentowy, tj. \texttt{super}. W takim wypadku, wszystkie argumenty przekazane do tej metody są przez interpreter podane do tego bezargumentowego wywołania \texttt{super}, tj. metoda rodzica zostaje wywołana dokładnie z takimi samymi argumentami. W takim wypadku, jedyne co robimy to zapisujemy w bazie wierzchołek odpowiadający wywołaniu bezargumentowego \texttt{super}.
+
+
+\subsection{Bloki i lambdy}
+
+Jak w większości współczesnych języków programowania, w Ruby również funkcje są \textit{first class citizens}, a więc są wartościami, które mogą być przypisywane do zmiennych i przekazywane jako argumenty. W Ruby są obecne też bloki, które są niczym innym jak przekazywaną do wywołania metody funkcją, którą można wywoływać wewnątrz metody za pomocą specjalnej składni \texttt{yield}. Każde użycie składni \texttt{yield} wewnątrz metody wywołuje tę funkcję i przekazuje do niej argumenty (jeśli zostały jakieś przekazane do \texttt{yield}).
+
+Analizując słowo kluczowe \texttt{yield}, tworzymy specjalny rekord składający się z przekazanych argumentów i specjalnego wierzchołka na wynik - bardzo podobnie jak w przypadku wywołania metody. Dodajemy ten rekord do specjalnej listy połączonej z definicją aktualnie przetwarzanej metody.
+
+Analizując blok, podejmujemy działania podobne, jak przy definiowaniu zwykłej metody, tj. analizujemy argumenty, przygotowujemy wierzchołki na argumenty formalne, wierzchołek na wynik bloku i wszystko łączymy w rekord. Ruby nie posiada specjalnego słowa kluczowego na zbudowanie funkcji anonimowej, jest to po prostu blok przekazany do funkcji o nazwie \texttt{lambda}. Prosta heurystyka znowu pozwala rozróżnić przypadki, kiedy po prostu budujemy funkcję anonimową, a kiedy przekazujemy blok do wywołania metody. W tym pierwszym przypadku, zapisujemy identyfikator (automatycznie wygenerowany, na potrzeby analizy) tej funkcji w wierzchołku, a w drugim -- zapisujemy ten identyfikator przy wywołaniu metody.
+
+% foo(&x)
+% foo(&:x)
+
+
+
+%\subsection{Struktury}
 \subsection{Biblioteka standardowa}
+
+\subsection{self}
+
+%wyjątki
+% pętle
+
+
+\subsection{Named arguments}
+%\subsection{Klasy singletonowe}
+%\subsection{Include/extend/prepare}
+
 
 \section{Wnioskowanie typu}
 
-W sporej części będą punkty jak wyżej, dodatkowo:
+Kiedy graf jest gotowy, przekazujemy go do funkcji wnioskującej typy wszystkich wierzchołków. Funkcja ta jest podzielona na kilka etapów.
+Do kolejki z wierzchołkami są na początku dodawane wszystkie wierzchołki, a typ wszystkich jest ustawiany na \texttt{Bottom}.
+Następnie przetwarzamy każdy wierzchołek (nazwijmy go \texttt{X}) z kolejki.
+Jeżeli po inferencji typu, typ wierzchołka \texttt{X} się zmienił, patrzymy na wszystkie krawędzie wychodzące z \texttt{X} i dodajemy docelowe wierzchołki tych krawędzi do kolejki, jeśli ich tam jeszcze nie ma.
+Gdy przetworzymy wszystkie wierzchołki, przechodzimy do przetwarzania wywołań metod.
+Wywołanie metody przetwarzamy tylko, jeśli wszystkie jej argumenty oraz obiekt na którym wywoływana jest metoda, są ukonkretnione (tj. żaden z nich nie jest typu \texttt{Bottom}).
+Następnie, w zależności od obliczonego typu obiektu na którym jest wywoływana metoda, oraz jej nazwy, zachodzi kilka heurystyk opisanych w następnych częściach.
 
-\subsection{Typy}
-\subsection{Specjalny typ - Array/Tuple}
-\subsection{Specjalny typ - Hash}
-\subsection{Wywołania popularnych funkcji polimorficznych, Array.map}
-\subsection{Szczególne funkcje w Object}
+Schemat we wszystkich jest podobny i polega na znalezieniu w bazie definicji metody, która została wywołana, a następnie połączeniu wierzchołków argumentów wywołania (przyp: jest jakaś lepsza polska nazwa na tzw. actual arguments?) z argumentami formalnymi oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania.
+Dzięki temu że wszystkie argumenty są zdefiniowane, możemy tutaj przeprowadzić kilka dodatkowych heurystyk.
+Są obecne specjalne mechanizmy pilnujące, że daną definicję metody przypiszemy do danego wywołania tylko raz (bo wywołania mogą być przetwarzane więcej niż raz).
+Następnie, jeśli w efekcie przetwarzania metod zostały dodane jakieś wierzchołki do kolejki, to wracamy do etapu przetwarzania wierzchołków.
+Jeżeli żadne nie zostały dodane, to przetwarzamy znowu wywołania metod, tym razem obsługując wywołanie nawet wtedy, jeśli któryś z argumentów nie jest zdefiniowany.
+
+\subsection{Heurystyki obsługi wywołań}
+
+Najpopularniejsza jest sytuacja, gdy wywnioskowaliśmy, że obiekt na którym jest wywoływana metoda (przyp: da się to jakoś zwięźlej?) jest jest typu \texttt{NominalType(Foo)}.
+Wtedy najpierw sprawdzamy, czy to wywołanie nie jest jednym z wywołań metod polimorficznych, które obsługujemy w specjalny sposób. Takich metod jest skończona liczba i są to metody z biblioteki standardowej.
+Jeżeli nie, to wykonywane jest żądanie do bazy o definicję metody instancji o danej nazwie, dla klasy \texttt{Foo}.
+
+Jeżeli taka metoda istniała, to następuje parę rzeczy. Najpierw, wspomniane już połączenie wierzchołków argumentów wywołania z wierzchołkami argumentów formalnych, oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania. Następnie sprawdzamy, czy w definicji znalezionej metody są jakieś wywołania bezargumentowego \texttt{super}. Jeśli tak, to łączymy wierzchołki argumentów wywołania z wierzchołkami argumentów formalnych metody rodzica -- odpowiadającą metodę rodzica znajdujemy przez odpowiednie zapytanie do bazy.
+
+\subsubsection{Metoda klasowa}
+
+\subsubsection{Konstruktor}
+
+\subsubsection{Lambda}
+
+
+%\subsection{
+
+
+%\subsection{Typy}
+%\subsection{Specjalny typ - Array/Tuple}
+%\subsection{Specjalny typ - Hash}
+%\subsection{Wywołania popularnych funkcji polimorficznych, Array.map}
+%\subsection{Szczególne funkcje w Object}
 
 \section{Future work}
 
