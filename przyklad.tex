@@ -282,18 +282,33 @@ Jeżeli żadne nie zostały dodane, to przetwarzamy znowu wywołania metod, tym 
 
 \subsection{Heurystyki obsługi wywołań}
 
-Najpopularniejsza jest sytuacja, gdy wywnioskowaliśmy, że obiekt na którym jest wywoływana metoda (przyp: da się to jakoś zwięźlej?) jest jest typu \texttt{NominalType(Foo)}.
-Wtedy najpierw sprawdzamy, czy to wywołanie nie jest jednym z wywołań metod polimorficznych, które obsługujemy w specjalny sposób. Takich metod jest skończona liczba i są to metody z biblioteki standardowej.
-Jeżeli nie, to wykonywane jest żądanie do bazy o definicję metody instancji o danej nazwie, dla klasy \texttt{Foo}.
+Na początku sprawdzamy czy wywołanie nie pasuje do jednej z heurystyk opisanych poniżej. W przeciwnym przypadku zakładamy że to jest zwykłe wywołanie, które w szczególe zostanie omówione w następnej sekcji.
 
-Jeżeli taka metoda istniała, to następuje parę rzeczy. Najpierw, wspomniane już połączenie wierzchołków argumentów wywołania z wierzchołkami argumentów formalnych, oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania. Następnie sprawdzamy, czy w definicji znalezionej metody są jakieś wywołania bezargumentowego \texttt{super}. Jeśli tak, to łączymy wierzchołki argumentów wywołania z wierzchołkami argumentów formalnych metody rodzica -- odpowiadającą metodę rodzica znajdujemy przez odpowiednie zapytanie do bazy.
+Po pierwsze, wywołanie może wyglądać jak wywołanie konstruktora, tj. jest wywoływana metoda \texttt{new} na typie reprezentującym klasę. Ten przypadek jest prawie taki sam jak obsłużenie zwykłego wywołania metody z tą różnicą, że zamiast zwrócić wynik konstruktora, zwracamy typ instancji zamiast typu klasowego na którym konstruktor był wywołany, tj. jeżeli konstruktor był wywołany na wierzchołku typu \texttt{ClassType(Foo)} to zwracamy typ \texttt{NominalType(Foo)}.
 
-\subsubsection{Metoda klasowa}
+Drugim przypadkiem jest kiedy obiekt na którym wywołujemy metodę jest typu \texttt{ProcType}, a nazwa metody to \texttt{call}. Oznacza to wywołanie funkcji anonimowej. W \texttt{ProcType} trzymamy identyfikator funkcji anonimowej, wystarczy go więc tylko pobrać i wyciągnąć z bazy definicję funkcji -- reszta procedury jest taka jak w przypadku zwykłego wywołania metody.
 
-\subsubsection{Konstruktor}
+Trzeci przypadek to metoda klasowa. Uznajemy wywołanie za wywołanie metody klasowej, jeśli obiekt na którym wywołujemy metodę jest pewnego typu klasowego, tj. \texttt{ClassType}. W tym przypadku jedyną różnicą od zwykłego wywołania jest zapytanie do bazy danych, które szuka metod zdefiniowanych na eigenclass, a nie w definicji klasy.
 
-\subsubsection{Lambda}
+Tak jak zostało wspomniane wyżej, jeżeli żaden z tych przypadków nie zachodzi, uznajemy wywołanie za klasyczne wywołanie metody na instancji pewnego obiektu. Szukamy w takim wypadku metody o odpowiadającej do wywołania nazwie, która została zdefiniowana w klasie obiektu na którym metoda jest wywoływana.
 
+\subsection{Obsługa wywołania}
+
+Po powyższych heurystykach możemy założyć, że mamy już znalezioną definicję metody, do której chcemy podłączyć wywołanie. Definicja, niezależnie od tego czy była to klasyczna definicja metody czy definicja funkcji anonimowej, ma obowiązkowo kilka właściwości: drzewo argumentów formalnych, wierzchołek wyniku definicji, listę użyć bezargumentowego super, listę użyć słowa kluczowego \texttt{yield} (tj. wywołań bloków) oraz być może wierzchołek wywoływacza (wierzchołek wywoływacza jest specjalnym mechanizmem, opisanym dokładniej w sekcji poświęconej wywołaniom polimorficznym).
+
+Najpierw następuje dodanie krawędzi między wierzchołkiem obiektu, na którym jest wywoływana metoda, oraz specjalnego wierzchołka rodzaju \texttt{caller} dla tej definicji metody, o ile on istnieje.
+
+Najważniejsza część to wspomniane już połączenie wierzchołków argumentów wywołania z wierzchołkami argumentów formalnych, oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania. Są dwa powody, które utrudniają zrobienie poprawnego dopasowania argumentów wywołania i argumentów formalnych.
+
+Pierwszym jest tzw. \textit{splat argument}. Zarówno w argumentach wywołania jak i argumentach formalnych, możemy użyć składni \textit{splat}, która w przypadku argumentów formalnych spłaszcza przekazaną listę jako listę argumentów, a w przypadku argumentów formalnych buduje tablicę z przekazanych argumentów. Jest to mechanizm znany z wielu języków pozwalający na definiowanie i wywoływanie funkcji o zmiennej liczbie argumentów. 
+
+Drugi to \textit{named arguments} czyli argumenty, które w wywołaniu muszą być przekazane razem z nazwą argumentu formalnego, ale dzięki temu mogą być przekazane w dowolnej kolejności. Niestety w przeciwieństwie do wielu języków, jest to tylko pewna sztuczka głównie po stronie parsera. Mechanizm \textit{named arguments} w Ruby polega na tym, że jeżeli ostatni przekazywany argument jest słownikiem, to jest traktowany jako słownik zawierający przekazywane \textit{named arguments}. Z tego powodu, przekazywane argumenty wcale nie muszą być przekazywane explicit, ale mogą być przekazane np. przez zwykłą zmienną, która jest słownikiem. Dlatego też aby poprawnie dopasować przekazane \textit{named arguments} do tych w definicji wywołania, musielibyśmy śledzić dokładne mapowanie typów w każdym słowniku.
+
+Trzecim etapem jest połączenie przekazanych argumentów do metody z klasy nadrzędnej oraz wyników tej metody z wszystkimi wywołaniami bezargumentowego \texttt{super}.
+
+Kolejnym krokiem jest obsługa bloku. Blok mamy przypisany do wywołania, z reguły w postaci albo w postaci wierzchołka z identyfikatorem funkcji anonimowej (tj. przekazany blok był znany już przy budowaniu grafu), albo wierzchołka grafu, który został otypowany na \texttt{ProcType} i zawiera w sobie identyfikator funkcji anonimowej. Następuje więc przejście po wszystkich użyciach słowa kluczowego \texttt{yield} w tej metodzie i połączeniu przekazanych do \texttt{yield} argumentów z argumentami formalnymi znalezionej funkcji anonimowej oraz wierzchołka wyniku funkcji anonimowej z wierzchołkiem wyniky \texttt{yield}. Jest to procedura identyczna do opisanego wyżej łączenia argumentów wywołania z argumentami formalnymi.
+
+Na końcu, następuje połączenie wierzchołka wyniku metody oraz wierzchołka wyniku wywołania.
 
 %\subsection{
 
