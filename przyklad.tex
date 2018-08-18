@@ -204,11 +204,11 @@ Podobnie jak jest to ze stałymi, podczas budowania grafu zapisujemy znalezione 
 
 \subsection{Zmienne lokalne}
 
-Tak jak zostało to wspomniane, wierzchołki o przypisaniach zmiennych lokalnych są przechowywane w kontekście w postaci podobnej do klasycznej statycznej analizy \textit{Reaching Definitions}, więc są dość dokładne.
+Tak jak zostało to wspomniane, wierzchołki o przypisaniach zmiennych lokalnych są przechowywane w kontekście w postaci podobnej do klasycznej statycznej analizy \textit{Reaching Definitions}, więc są dość dokładne. Podczas przechodzenia przez AST, w kontekście przekazujemy słownik mapujący identyfikatory zmiennych lokalnych w aktualnym \textit{lexical scope} na możliwe przypisania danej zmiennej lokalnej, a dokładniej -- wierzchołki tych przypisań.
 
 \subsection{Dziedziczenie}
 
-Ruby wspiera wiele rodzajów dziedziczenia, ale poszczególne konstrukty nie są od siebie istotnie różne. Jednak ponieważ to po czym dziedziczymy, składniowo, nie musi być identyfikatorem, ale może być dowolnym wyrażeniem (więc poprawne są konstrukty typu \texttt{class Foo < \$x} czy {class Foo < self}), znowu niemożliwa jest w pełni poprawna analiza. Aktualnie ograniczamy się tylko do obsługiwania sytuacji gdy to po czym dziedziczymy jest poprawnym identyfikatorem stałej, w przeciwnym wypadku ignorujemy to wyrażenie. W przyszłości łatwo można by wprowadzić heurystykę pozwalającą np. na dziedziczenie po strukturach (\texttt{class Foo < Struct.new(:field)}), ponieważ jest kilka takich idiomatycznych przypadków w których dziedziczymy po wyrażeniach nie będących identyfikatorami.
+Ruby wspiera wiele rodzajów dziedziczenia, ale poszczególne konstrukty nie są od siebie istotnie różne. Jednak ponieważ to po czym dziedziczymy, składniowo, nie musi być identyfikatorem, ale może być dowolnym wyrażeniem (więc poprawne są konstrukty typu \texttt{class Foo < \$x} czy \texttt{class Foo < self}), znowu niemożliwa jest w pełni poprawna analiza. Aktualnie ograniczamy się tylko do obsługiwania sytuacji gdy to po czym dziedziczymy jest poprawnym identyfikatorem stałej, w przeciwnym wypadku ignorujemy to wyrażenie. W przyszłości łatwo można by wprowadzić heurystykę pozwalającą np. na dziedziczenie po strukturach (\texttt{class Foo < Struct.new(:field)}), ponieważ jest kilka takich idiomatycznych przypadków w których dziedziczymy po wyrażeniach nie będących identyfikatorami.
 
 \subsection{Zmienne instancji}
 
@@ -225,7 +225,7 @@ Tutaj funkcja budująca ucieka się do heurystyki wykrywającej użycie funkcji
 
 \subsection{Widzialność metod}
 
-W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to - posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy są mogą prawdopodobnie pojawić się w produkcyjnych programach -- natknąłem się na ten problem osobiście (przyp: nie wiem czy powinienem pisać takie rzeczy, w pierwszej osobie). Jednak z braku lepszego rozwiązania, stosujemy tutaj też również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
+W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to - posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy mogą prawdopodobnie pojawić się w produkcyjnych programach -- natknąłem się na ten problem osobiście (przyp: nie wiem czy powinienem pisać takie rzeczy, w pierwszej osobie). Jednak z braku lepszego rozwiązania, stosujemy tutaj też również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
 
 
 \subsection{Wywołania metod}
@@ -248,21 +248,27 @@ Analizując blok, podejmujemy działania podobne, jak przy definiowaniu zwykłej
 % foo(&x)
 % foo(&:x)
 
-
-
-%\subsection{Struktury}
 \subsection{Biblioteka standardowa}
+
+Ruby jest językiem interpretowanym, więc definicje podstawowych klas i metod są bezpośrednio w interpreterze. Interpreter jest napisany w C, więc tych definicji nie ma napisanych w Ruby. Aby nasza analiza była praktyczna, definicje biblioteki standardowej powinny być w pewien sposób obsłużone.
+
+Metody w bibliotece standardowej możemy podzielić na dwie grupy. W większości metod, jedyne co nas interesuje to zwracany typ -- wyobraźmy sobie metody typu \texttt{File.read(filepath)}. Wystarczające jest jeżeli o tej metodzie zapiszemy, że zawsze zwraca typ \texttt{NominalType(String)}. We taki sposób możemy sobie poradzić z większością metod.
+
+Cięższym przypadkiem są metody przetwarzania danych, takie jak \texttt{map} lub \texttt{filter} w klasie \texttt{Array}. Tablica jest typem parametryzowanym (np. \texttt{Generic(Array)<Integer>}), więc nie ma tutaj stałego typu który moglibyśmy uniwersalnie zwracać. Drugą opcją byłoby dodanie odpowiednich wierzchołków i krawędzi odpowiadających temu, jak dana metoda działa i traktowanie jej dokładnie tak samo jak zwykłe metody podczas typowania (jedyną różnicą byłoby więc to, że graf dla definicji tej metody byłby napisany przez autora analizy, a nie automatycznie na podstawie AST). Jednak podczas typowania, łączymy każde użycie metody z tą samą definicją formalną. Oznaczałoby to, że jeżeli w dwóch różnych miejscach kodu wywołujemy metodę \texttt{map}, raz na obiekcie typu \texttt{Generic(Array)<Integer>}, a raz na \texttt{Generic(Array)<String>}, to wywnioskowanym zwracanym typem dla obu tych wywołań byłby \texttt{Generic(Array)<Integer or String>}. A ponieważ w praktyce wywołujamy \texttt{map} na listach wielu różnych obiektów, taki zwracany typ byłby bardzo długi i bezużyteczny.
+
+Trzecią opcją byłoby zapisanie przez autora analizy tylko wzoru jak wygląda graf dla tej definicji metody, ale tworzenie świeżych wierzchołków i krawędzi w każdym miejscu, w którym ta metoda jest wywoływana. Jest to rozwiązanie przyjęte w tej pracy. Oczywistą wadą jest większy rozmiar grafu, ale rozwiązanie to sprawdza się w praktycznych zastosowaniach.
 
 \subsection{self}
 
+\texttt{self} jest konstrukcją języków zorientowanych obiektowo, która sprawia problemy przy analizie statycznej.
+Jest tak ponieważ \texttt{self} jest jednocześnie bardzo często używany (w szczególności właściwie wszystkie wywołania metod prywatnych to wywołania na wyrażeniu \texttt{self}) oraz jego dokładny typ jest trudny do określenia. Nasza analiza korzysta z bardzo uproszczonego założenia, że \texttt{self} jest zawsze typem odpowiadającym definicji klasy, w której jest użyte. W przyszłości jednak można by było spróbować z założeniem, że \texttt{self} jest typu odpowiadającym danej definicji klasy lub jednym z jej podklas. Z jednej strony, takie rozwiązanie byłoby bardziej bezpieczną analizą. Z drugiej strony, w każdym projekcie są klasy podstawowe, po których dziedziczy wiele innych definicji klas. W takich przypadkach bezpieczniejsze podejście mogłoby się okazać niepraktyczne, ponieważ \texttt{self} byłby typowany jako unia np. 100 różnych klas.
+
 %wyjątki
 % pętle
-
-
-\subsection{Named arguments}
-%\subsection{Klasy singletonowe}
-%\subsection{Include/extend/prepare}
-
+% eigenclasses
+% return
+% multiple assignment
+% słowniki
 
 \section{Wnioskowanie typu}
 
@@ -314,20 +320,19 @@ Na końcu, następuje połączenie wierzchołka wyniku metody oraz wierzchołka 
 
 
 %\subsection{Typy}
-%\subsection{Specjalny typ - Array/Tuple}
-%\subsection{Specjalny typ - Hash}
-%\subsection{Wywołania popularnych funkcji polimorficznych, Array.map}
+%\subsection{Wywołania popularnych funkcji polimorficznych, Array.map}, ten cały wierzchołek caller
 %\subsection{Szczególne funkcje w Object}
+% szczególne wierzchołki dla szczególnych funkcji - extract_class
 
 \section{Future work}
 
-\subsection{More metaprogramming intelligence}
-\subsection{Bundler, gems and libraries}
-\subsection{YARD}
-\subsection{Rust implementation}
-\subsection{Caching}
-\subsection{Tracking effects, ex. exceptions}
-\subsection{Tracepoint}
+%\subsection{More metaprogramming intelligence}
+%\subsection{Bundler, gems and libraries}
+%\subsection{YARD}
+%\subsection{Rust implementation}
+%\subsection{Caching}
+%\subsection{Tracking effects, ex. exceptions}
+%\subsection{Tracepoint}
 
 
 %%%%% BIBLIOGRAFIA
