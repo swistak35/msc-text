@@ -263,8 +263,14 @@ Trzecią opcją byłoby zapisanie przez autora analizy tylko wzoru jak wygląda 
 \texttt{self} jest konstrukcją języków zorientowanych obiektowo, która sprawia problemy przy analizie statycznej.
 Jest tak ponieważ \texttt{self} jest jednocześnie bardzo często używany (w szczególności właściwie wszystkie wywołania metod prywatnych to wywołania na wyrażeniu \texttt{self}) oraz jego dokładny typ jest trudny do określenia. Nasza analiza korzysta z bardzo uproszczonego założenia, że \texttt{self} jest zawsze typem odpowiadającym definicji klasy, w której jest użyte. W przyszłości jednak można by było spróbować z założeniem, że \texttt{self} jest typu odpowiadającym danej definicji klasy lub jednym z jej podklas. Z jednej strony, takie rozwiązanie byłoby bardziej bezpieczną analizą. Z drugiej strony, w każdym projekcie są klasy podstawowe, po których dziedziczy wiele innych definicji klas. W takich przypadkach bezpieczniejsze podejście mogłoby się okazać niepraktyczne, ponieważ \texttt{self} byłby typowany jako unia np. 100 różnych klas.
 
-%wyjątki
-% pętle
+\subsection{Wyjątki}
+
+Obsługa wyjątków nie jest skomplikowana i główną trudnością jest odpowiednie obsłużenie \textit{lexical scope} dla zmiennych lokalnych. Jedyną rzeczą wartą wspomnienia jest fakt, że \texttt{raise SomeError} jest pierwszym przykładem wyrażenia, któremu celowo przypisujemy podczas typowania typ \texttt{Bottom}, ponieważ nie zwraca to wyrażenie żadnej wartości.
+
+\subsection{Pętle}
+
+Pętle i słowa kluczowe z nimi związane (\texttt{break}, \texttt{next} itp.) również nie są zbyt interesujące. Po pierwsze dlatego, że z reguły nie mają typu, więc jedyne na co trzeba uważać to znowu, poprawne obsłużenie \textit{lexical scope} zmiennych lokalnych. Po drugie dlatego, że pętle w ruby są używane bardzo rzadko i iteracje w idiomatycznym Ruby wyraża się za pomocą funkcyjnych \texttt{map}, \texttt{filter}, \texttt{each} i innych.
+
 % eigenclasses
 % return
 % multiple assignment
