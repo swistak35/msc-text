@@ -180,6 +180,12 @@ Pierwszym ciekawym przypadkiem jest literał tablicy, np. \texttt{[42, ``string'
 
 Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy na typy wszystkich wierzchołków krawędzi wejściowych, tworzy z nich jeden typ Union -- w naszym przykładzie \texttt{Union(Integer or String)} oraz finalnie przypisuje temu wierzchołkowi typ parametryzowany \texttt{Generic(Array)<Union(Integer or String)>}.
 
+\subsection{Słowniki}
+
+W słownikach zarówno klucze i wartości mogą być różnego typu. Literał budowania słownika może również w sobie zawierać klucze (i oczywiście wartości), które nie są literałami. Przetwarzając literał słownika, budujemy trzy wierzchołki: \texttt{hash}, \texttt{hash\_keys} i \texttt{hash\_values}. Następnie przetwarzamy wszystkie klucze, oraz dodajemy dla każdego klucza krawędź pomiędzy wierzchołkiem wyrażenia klucza, a wierzchołkiem \texttt{hash\_keys}. Podobnie przetwarzamy wszystkie wartości i dodajemy krawędź pomiędzy wierzchołkami wartości, a wierzchołkiem \texttt{hash\_values}. Na końcu, dodajemy dwie krawędzie: pomiędzy \texttt{hash\_keys} oraz \texttt{hash} i \texttt{hash\_values} oraz \texttt{hash}.
+
+Funkcja wnioskująca typ dla wierzchołka rodzajów \texttt{hash\_keys} oraz \texttt{hash\_values} działa grupująco - tj. zbiera wszystkie typy z wierzchołków z krawędzi wejściowych i łączy je w jeden typ \texttt{Union(...)}. Funkcja typująca wierzchołek \texttt{hash} patrzy na rodzaje wierzchołków i buduje finalny typ \texttt{GenericType(Hash)<typ otrzymany z hash\_keys, typ otrzymany z hash\_values>}.
+
 \subsection{Zmienne globalne}
 
 W ogólności nie możemy wiedzieć w jakiej kolejności zostaną zmienne globalne, więc zakładamy, że w momencie referencji zmiennej globalnej jej wartość może pochodzić z dowolnego przypisania tej zmiennej w całym kodzie źródłowym. W tym celu, dla każdego identyfikatora (nie wystąpienia!) zmiennej globalnej tworzymy specjalny wierzchołek rodzaju \texttt{gvar\_definition}. Za każdym razem gdy przetwarzamy przypisanie jakiejś wartości do danej zmiennej globalnej, tworzymy krawędź od tej wartości, do danego wierzchołka \texttt{gvar\_definition}. Odpowiednio, przetwarzając referencję zmiennej globalnej, tworzymy krawędź od \texttt{gvar\_definition} do tej wartości. W ten sposób, funkcja wnioskująca typy przekaże wszystkie możliwe przypisania danej zmiennej globalnej do wszystkich ich wystąpień w programie.
