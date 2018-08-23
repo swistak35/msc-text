@@ -186,7 +186,7 @@ Funkcja budująca graf, przyjmuje jako zależność instancję Bazy danych - na 
 
 Podczas przechodzenia przez AST pliku, przetwarzając wierzchołek definicji klasy lub modułu, zapisujemy tę definicję w bazie. W Ruby klasa (i moduł) są wartościami, więc odrębnie zapisujemy definicję klasy (i informację np. o jej rodzicu), a oddzielnie fakt, że klasa ta została przypisana do pewnej stałej. Pozwala to na wspieranie otwartych klas, oraz w przyszłości (przyp: mogę w sobie w pracy magisterskiej mówić o 'przyszlosci'?) klas/modułów anonimowych.
 
-Funkcja budująca graf jest funkcją rekurencyjną przekazującą sobie dwa argumenty: podgraf AST do przetworzenia, oraz kontekst. Kontekst przechowuje kilka informacji o aktualnym stanie budowania grafu. Po pierwsze, wie w jakim zagnieżdżeniu klas / modułów jesteśmy, oraz jeżeli aktualnie przetwarzamy definicję metody, to co to jest za metoda. Ponadto, mamy słownik mapujący identyfikatory obecnych zmiennych lokalnych do ich możliwych definicji (w stylu klasycznej analizy statycznej \textit{Reaching Definitions}). Wreszcie, trzymamy też krótką informację o aktualnie zadeklarowanej widzialności definiowanych metod (publiczne, prywatne lub chronione).
+Funkcja budująca graf jest funkcją rekurencyjną przekazującą sobie dwa argumenty: podgraf AST do przetworzenia, oraz kontekst. Kontekst przechowuje kilka informacji o aktualnym stanie budowania grafu. Po pierwsze, wie w jakim zagnieżdżeniu klas / modułów jesteśmy, oraz jeżeli aktualnie przetwarzamy definicję metody, to co to jest za metoda. W kontekście staramy się również w miarę możliwości śledzić czym jest aktualnie \texttt{self}. Ponadto, mamy słownik mapujący identyfikatory obecnych zmiennych lokalnych do ich możliwych definicji (w stylu klasycznej analizy statycznej \textit{Reaching Definitions}). Wreszcie, trzymamy w nim też krótką informację o aktualnie zadeklarowanej widzialności definiowanych metod (publiczne, prywatne lub chronione).
 
 \subsection{Inne stałe}
 
@@ -210,10 +210,21 @@ Ruby wspiera wiele rodzajów dziedziczenia, ale poszczególne konstrukty nie są
 
 Skoro Ruby jest językiem obiektowym, nie może zabraknąć zmiennych instancji. Aktualnie traktujemy je w podobny sposób jak zmienne globalne - nie próbujemy śledzić dokładnego flow, tylko zbieramy wszystkie możliwe przypisania zmiennych instancji, wszystkie możliwe użycia, i je łączymy ze sobą przez wierzchołek pośredni \texttt{ivar\_definition}. Aktualnie ignorujemy fakt, że zmienna \texttt{@x} w klasie \texttt{Foo} i \texttt{Bar} jest tą samą zmienną, jeśli \texttt{Bar} jest rodzicem \texttt{Foo}, ale łatwo rozszerzyć kod o tę funkcjonalność (przyp: może to jeszcze zrobię w sumie, bo szkoda tego tłumaczenia).
 
+\subsection{Eigenclass}
+
+Ruby, będąc językiem w pełni obiektowym, nie ma mechanizmu metod statycznych znanego np. z C++, ale ma podobnie działające tzw. metody klasowe. Klasy są obiektem, a jeżeli coś jest obiektem (instancją) to musi mieć również swoją klasę. Naturalnym wydawałoby się, że klasa jest instancją klasy \texttt{Class}, ale w Ruby mamy dodatkowy element -- każda definicja klasy tworzy dla tej klasy również \texttt{eigenclass}. Właściwym łańcuchem dziedziczenia jest więc \texttt{Foo < eigenclass Foo < Class}.
+
+Otwierając definicję klasy (ale gdy ciągle nie jesteśmy wewnątrz definicji metody), \texttt{self} jest właśnie instancją tej \textit{eigenclass}. W definicji klasy możemy wtedy korzystać ze składni \texttt{def self.foo} aby zdefiniować metodę na \textit{eigenclass} lub \texttt{class << self} aby otworzyć definicję \textit{eigenclass}. W ten sposób zdefiniowane metody zachowują się jak metody statyczne, tj. można je wywołać przez składnię \texttt{PewnaKlasa.foo(...)}.
+
+Składnie te są reprezentowane przez konkretne wierzchołki, ale w miejscu \texttt{self} może być dowolne wyrażenie -- możemy więc napisać np. \texttt{def Foo.bar} i zdefiniować metodę na \textit{eigenclass} klasy \texttt{Foo} będąc wewnątrz kompletnie innej metody.
+Jednakże prawie zawsze jest to \texttt{self}, więc obsługujemy tylko tę składnię.
+Obsługa definicji metody wewnątrz \textit{eigenclass} (\texttt{def self.foo; ...; end}) lub definicji \textit{eigenclass} (\texttt{class << self; ...; end}) są bardzo podobne do zwykłej definicji metody lub klasy, z tą różnicą, że zamiast zdefiniować metodę na klasie, najpierw pobieramy z bazy \textit{eigenclass}, a dopiero potem dodajemy definicję.
+Jeśli \textit{eigenclass} nie ma, to dodajemy pustą definicję klasy jako tę właśnie \textit{eigenclass}.
+
 
 \subsection{attr reader, private}
 
-Są w Ruby metody \textit{klasowe} (tj. metody działające na tzw. \textit{eigenclass} danej klasy, a nie instancji), które definiują inne metody, więc są już de facto metaprogramowaniem.
+Są wbudowane w Ruby metody \textit{klasowe}, które definiują inne metody, więc są już de facto metaprogramowaniem.
 W bibliotece standardowej Rubiego najpopularniejsze to \texttt{attr\_reader} i \texttt{attr\_writer}.
 \texttt{attr\_reader(:foo)} definiuje metodę odczytującą zmienną instancji, o takiej samej nazwie, jest więc odpowiednikiem kodu \texttt{def foo; @foo; end}. Oczywiście, \texttt{attr\_reader} przyjmuje dowolną liczbę argumentów, więc szybko można za jego pomocą zdefiniować wiele takich funkcji.
 
@@ -274,12 +285,23 @@ Pętle i słowa kluczowe z nimi związane (\texttt{break}, \texttt{next} itp.) r
 Ruby posiada znane z innych języków programowania słowo kluczowe \texttt{return}, kończące wykonywanie funkcji i zwrócenie wartości jako wynik funkcji. Aby to wspierać, pobieramy z kontekstu wierzchołki aktualnie przetwarzanej metody, a wśród nich wierzchołek rodzaju \texttt{call\_result}. Jedyne co musimy zrobić to dodać krawędź pomiędzy wierzchołkiem wyrażenia przekazanego w \texttt{return}, a wierzchołkiem \texttt{call\_result} pobranym wcześniej z kontekstu.
 
 
-
-% eigenclasses
-% multiple assignment
-% słowniki
-
 \section{Wnioskowanie typu}
+
+\subsection{Typy}
+
+Mamy następujące typy:
+
+\begin{itemize}
+ \item \texttt{Bottom} - typ oznaczający brak typu, używany kiedy typ wierzchołka jest jeszcze nie znany lub typu nie posiada (np. słowa kluczowe \texttt{raise} lub \texttt{break})
+ \item \texttt{NominalType(Foo)} -- podstawowy typ, oznacza że wyrażenie jest instancją klasy Foo.
+ \item \texttt{ClassType(Foo)} -- typ oznaczający że wyrażenie jest klasą \texttt{Foo}. Innymi słowy, jest instancją klasy \texttt{Class} lub instancją \textit{eigenclass} klasy \texttt{Foo}, ale tak dokładna informacja jest oczywiście przydatniejsza niż samo \texttt{NominalType(Class)}, dlatego mamy oddzielny typ na ten specjalny przypadek.
+ \item \texttt{GenericType(Foo)<typ1, typ2, ...>} -- typ oznaczający jeden z typów generycznych. Opisane w pracy są dwa: \texttt{Array} posiadający jeden parametr, oraz \texttt{Hash} posiadający dwa parametry (typ kluczy i typ wartości). Parametry są typami. Można sobie łatwo wyobrazić rozszerzenie na inne klasy z biblioteki standardowej, takie jak \texttt{Set} lub \texttt{Range}.
+ \item \texttt{UnionType(typ1, typ2, ...)} -- typ oznaczającą dowolny z wymienionych typów. Większość rodzajów wierzchołków w funkcji typującej jedyne co robi to bierze typy z wszystkich wierzchołków wejściowych i tworzy z nich jeden \texttt{UnionType}.
+ \item \texttt{MainType} -- typ szczególny, mało istotny w typowaniu. Definicje metod, które są zdefiniowane nie w definicji klasy, są zdefiniowane na specjalnym obiekcie \texttt{main}.
+\end{itemize}
+
+
+\subsection{Funkcja wnioskująca typy}
 
 Kiedy graf jest gotowy, przekazujemy go do funkcji wnioskującej typy wszystkich wierzchołków. Funkcja ta jest podzielona na kilka etapów.
 Do kolejki z wierzchołkami są na początku dodawane wszystkie wierzchołki, a typ wszystkich jest ustawiany na \texttt{Bottom}.
@@ -325,15 +347,19 @@ Kolejnym krokiem jest obsługa bloku. Blok mamy przypisany do wywołania, z regu
 
 Na końcu, następuje połączenie wierzchołka wyniku metody oraz wierzchołka wyniku wywołania.
 
-%\subsection{
+
+\subsection{Wywołania funkcji polimorficznych}
+
+Jak już zostało wspomniane, definicja metody w Bazie ma w sobie kilka wierzchołków, które są istotne z punktu widzenia analizy, takie jak wierzchołek wyniku metody, wierzchołki argumentów i inne związane z blokami i wywołaniami bezargumentowego \texttt{super}. Te wierzchołki mogą zostać przechowywane na dwa sposoby. Pierwszy z nich to po prostu dokładnie te wierzchołki, które są obecne w grafie. Drugi sposób to przechowywanie szkicu podgrafu (tj. wierzchołki i krawędzie, które nie należą do grafu -- są tylko wzorem), z którego przy okazji przetwarzania każdego wywołania są tworzone świeże wierzchołki.
+
+Świeże wierzchołki dla każdego wywołania oznaczają też, że możemy skorzystać z typu wyrażenia na którym metoda została wywołana. Dlatego też, jeżeli obsługujemy wywołanie metody której definicja korzysta z podgrafu, łączymy wierzchołek wyrażenia na którym została wywołana metoda z wierzchołkiem rodzaju \texttt{caller}. Dzięki temu możemy bez problemu zbudować podgrafy działające poprawnie dla takich metod polimorficznych jak \texttt{map} z \texttt{Array} lub po prostu funkcje, które zwracają obiekt na którym zostały wywołane (nie było to możliwe bez podgrafu), takie jak np. \texttt{freeze}.
+
+\subsection{Inne wierzchołki specjalne}
+
+Podejście z podgrafami pozwala też na obsługę niektórych metod w specjalny sposób, bez dużej ingerencji w funkcję typującą. Przykładem takiej metody jest metoda \texttt{class}, którą możemy wywołać na dowolnym obiekcie, a która zwraca klasę tego obiektu. Dzięki podgrafowi, definicja takiej metody to tylko dwie krawędzie, widoczne na rysunku. Specjalny wierzchołek \texttt{extract\_class} na podstawie typu wierzchołka z krawędzi wejściowej zwraca odpowiedni typ, który zwróciłaby metoda \texttt{class}. Na przykład, jeżeli typ wejściowy to \texttt{NominalType(Foo)}, to typem wyjściowym będzie \texttt{ClassType(Foo)}.
 
 
-%\subsection{Typy}
-%\subsection{Wywołania popularnych funkcji polimorficznych, Array.map}, ten cały wierzchołek caller
-%\subsection{Szczególne funkcje w Object}
-% szczególne wierzchołki dla szczególnych funkcji - extract_class
-
-\section{Future work}
+%\section{Future work}
 
 %\subsection{More metaprogramming intelligence}
 %\subsection{Bundler, gems and libraries}
@@ -347,7 +373,8 @@ Na końcu, następuje połączenie wierzchołka wyniku metody oraz wierzchołka 
 %%%%% BIBLIOGRAFIA
 
 %\begin{thebibliography}{1}
-%\bibitem{example} \ldots
+%\bibitem{example} \ldots\
+% https://yehudakatz.com/2009/11/15/metaprogramming-in-ruby-its-all-about-the-self/
 %\end{thebibliography}
 
 \end{document}
