@@ -51,7 +51,6 @@ W szczególności istnieją zintegrowane środowiska programistyczne (IDE), któ
 \item skok do definicji (stałej, funkcji lub zmiennej)
 \item informacja o typie zmiennej
 \item autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
-\item refactoring - zmiana nazwy klasy (globalnie, w całym projekcie), wydzielenie metody, zmiennej, etc.
 \end{itemize}
 
 Niniejsza praca przedstawia jak można wykorzystać analizę statyczną plików źródłowych, aby dostarczyć powyższe funkcjonalności w języku Ruby, który z racji swojej dynamicznej natury stawia pewne problemy nie występujące w językach statycznie typowanych.
@@ -84,7 +83,7 @@ Najpopularniejsze wtyczki to:
 \begin{itemize}
 \item CTags - zbiera symbole z całego projektu i ich lokalizacje, nie radzi sobie w żaden sposób z metaprogramowaniem i nie potrafi dostarczyć tych funkcjonalności zależnie od kontekstu (np. skok do definicji metody zależy od miejsca, w którym ją się wywołuje)
 \item Robe - dostarcza informacje zależne od kontekstu, ale wykorzystuje bardzo proste heurystyki do zawężenia wyników
-\item Solargraph - dostarcza podobne funkcjonalności do tych wymienionych we wstępie (oprócz \textit{refactoringu}), stosuje do tego analizę statyczną oraz wykorzystuje inne źródła (takie jak dokumentacja YARD)
+\item Solargraph - dostarcza podobne funkcjonalności do tych wymienionych we wstępie, stosuje do tego analizę statyczną oraz wykorzystuje inne źródła (takie jak dokumentacja YARD)
 \item RGL - odmiennie od pozostałych narzędzi, dostarcza system typów i inferencję typów do Ruby. Wymaga jednak adnotacji klas i metod, tj. inferencja typów zachodzi tylko w ``otypowanych'' przez programistę metodach.
 \end{itemize}
 
@@ -141,16 +140,6 @@ Jednak najtrudniejszą część, a jednocześnie najbardziej potrzebną jest sko
 
 Pisząc kod, programista chce uniknąć napisania błędnej nazwy metody i pomaga w tym funkcjonalność autouzupełniania. Polega ono na wyświetleniu listy metod które można wywołać na danym wyrażeniu. Podobnie jak w przypadku skoku do definicji, aby wiedzieć jakie metody zaproponować programiście, musimy znać jak najdokładniej typ wyrażenia.
 
-\subsubsection{Refactoring}
-
-Aby móc przeprowadzać w miarę bezpieczne automatyczne zmiany kodu źródłowego, takie jak:
-\begin{itemize}
-\item Zmiana nazwy klasy (globalnie, w całym projekcie)
-\item Wydzielenie metody/zmiennej
-\item \textit{Inline} (?) metody/zmiennej
-\end{itemize}
-również potrzebujemy informacji o typie zmiennej (przyp. rozwinąć dlaczego).
-
 \subsection{Indeksowanie}
 
 Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowanie to spora część frontendu typowego interpretera, zawierający analizę leksykalną, składniową i semantyczną. Proces ten polega na trzech etapach:
@@ -184,7 +173,8 @@ Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy n
 
 W słownikach zarówno klucze i wartości mogą być różnego typu. Literał budowania słownika może również w sobie zawierać klucze (i oczywiście wartości), które nie są literałami. Przetwarzając literał słownika, budujemy trzy wierzchołki: \texttt{hash}, \texttt{hash\_keys} i \texttt{hash\_values}. Następnie przetwarzamy wszystkie klucze, oraz dodajemy dla każdego klucza krawędź pomiędzy wierzchołkiem wyrażenia klucza, a wierzchołkiem \texttt{hash\_keys}. Podobnie przetwarzamy wszystkie wartości i dodajemy krawędź pomiędzy wierzchołkami wartości, a wierzchołkiem \texttt{hash\_values}. Na końcu, dodajemy dwie krawędzie: pomiędzy \texttt{hash\_keys} oraz \texttt{hash} i \texttt{hash\_values} oraz \texttt{hash}.
 
-Funkcja wnioskująca typ dla wierzchołka rodzajów \texttt{hash\_keys} oraz \texttt{hash\_values} działa grupująco - tj. zbiera wszystkie typy z wierzchołków z krawędzi wejściowych i łączy je w jeden typ \texttt{Union(...)}. Funkcja typująca wierzchołek \texttt{hash} patrzy na rodzaje wierzchołków i buduje finalny typ \texttt{GenericType(Hash)<typ otrzymany z hash\_keys, typ otrzymany z hash\_values>}.
+Funkcja wnioskująca typ dla wierzchołka rodzajów \texttt{hash\_keys} oraz \texttt{hash\_values} działa grupująco - tj. zbiera wszystkie typy z wierzchołków z krawędzi wejściowych i łączy je w jeden typ \texttt{Union(...)}.
+Funkcja typująca wierzchołek \texttt{hash} patrzy na rodzaje wierzchołków i buduje finalny typ \texttt{GenericType(Hash)<typ otrzymany z hash\_keys, typ otrzymany z hash\_values>}.
 
 \subsection{Zmienne globalne}
 
