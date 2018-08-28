@@ -4,6 +4,7 @@
 \documentclass[declaration,shortabstract]{iithesis}
 
 \usepackage[utf8]{inputenc}
+\usepackage{graphicx}
 
 %%%%% DANE DO STRONY TYTUŁOWEJ
 % Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
@@ -159,6 +160,13 @@ Graf który budujemy jest skierowany i może zawierać cykle. Wierzchołki są e
 
 Na początek warto popatrzeć na najprostsze AST, czyli literały. AST literału liczby całkowitej (np. \texttt{42}) zostanie przekształcony na pojedyńczy wierzchołek rodzaju \texttt{int}. Rodzaj będzie potrzebny funkcji wnioskującej typy, która na podstawie rodzaju, dodatkowych parametrów wierzchołka oraz wierzchołków z krawędzi wejściowych będzie decydowała jakiego typu jest dany wierzchołek. W tym prostym przypadku wierzchołek nie ma żadnych parametrów i nie zwracamy uwagi na krawędzie wejściowe (bo ich, z metody budowania grafu, dla wierzchołka tego rodzaju nawet nie będzie) tylko przypisujemy wszystkim wierzchołkom rodzaju \texttt{int} typ \texttt{Nominal(Integer)}.
 
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.4]{imgs/msc-int.png}
+	\caption{Budowanie grafu dla literału liczby całkowitej}
+	%\label{fig:graph-int}
+\end{figure}
+
 Tak samo jest z literałami liczbami wymiernych, zmiennopozycyjnych, zespolonych oraz wartości \texttt{true}, \texttt{false} oraz \texttt{nil}.
 
 Podobnie sytuacja ma się w przypadku literałów tekstowych (wierzchołek rodzaju \texttt{str}) oraz symboli (wierzchołek rodzaju \texttt{sym}). Drobna różnica jest taka, że tekst może być z interpolacją (np. \texttt{``foo\#\{somevariable\}bar''}), a w takim przypadku najpierw rekurencyjnie przetwarzamy wszystkie interpolowane (?) wyrażenia, ponieważ typ wyrażeń interpolowanych też może być potrzebny programiście. Jednakże, funkcja wnioskująca przypisuje wierzchołkowi rodzaju \texttt{str} zawsze typ \texttt{Nominal(String)} niezależnie od krawędzi wejściowych. Analogicznie jest w przypadku symboli.
@@ -166,6 +174,12 @@ Podobnie sytuacja ma się w przypadku literałów tekstowych (wierzchołek rodza
 \subsection{Literały tablic}
 
 Pierwszym ciekawym przypadkiem jest literał tablicy, np. \texttt{[42, ``string'']}. Dla takiego AST, najpierw budujemy wierzchołki dla wszystkich poddrzew - w tym przykładzie dostaniemy dwa wierzchołki, odpowiednio rodzaju \texttt{int} oraz \texttt{str}. Następnie dodajemy wierzchołek rodzaju \texttt{array}, który będzie wynikiem przetwarzania tego AST, oraz dodamy krawędzie z wierzchołków \texttt{int} i \texttt{str} do wierzchołka \texttt{array}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.4]{imgs/msc-array.png}
+	\caption{Budowanie grafu dla literału tablicy}
+\end{figure}
 
 Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy na typy wszystkich wierzchołków krawędzi wejściowych, tworzy z nich jeden typ Union -- w naszym przykładzie \texttt{Union(Integer or String)} oraz finalnie przypisuje temu wierzchołkowi typ parametryzowany \texttt{Generic(Array)<Union(Integer or String)>}.
 
@@ -178,7 +192,13 @@ Funkcja typująca wierzchołek \texttt{hash} patrzy na rodzaje wierzchołków i 
 
 \subsection{Zmienne globalne}
 
-W ogólności nie możemy wiedzieć w jakiej kolejności zostaną zmienne globalne, więc zakładamy, że w momencie referencji zmiennej globalnej jej wartość może pochodzić z dowolnego przypisania tej zmiennej w całym kodzie źródłowym. W tym celu, dla każdego identyfikatora (nie wystąpienia!) zmiennej globalnej tworzymy specjalny wierzchołek rodzaju \texttt{gvar\_definition}. Za każdym razem gdy przetwarzamy przypisanie jakiejś wartości do danej zmiennej globalnej, tworzymy krawędź od tej wartości, do danego wierzchołka \texttt{gvar\_definition}. Odpowiednio, przetwarzając referencję zmiennej globalnej, tworzymy krawędź od \texttt{gvar\_definition} do tej wartości. W ten sposób, funkcja wnioskująca typy przekaże wszystkie możliwe przypisania danej zmiennej globalnej do wszystkich ich wystąpień w programie.
+W ogólności nie możemy wiedzieć w jakiej kolejności zostaną zmienne globalne, więc zakładamy, że w momencie referencji zmiennej globalnej jej wartość może pochodzić z dowolnego przypisania tej zmiennej w całym kodzie źródłowym. W tym celu, dla każdego identyfikatora (nie wystąpienia!) zmiennej globalnej tworzymy specjalny wierzchołek rodzaju \texttt{gvar\_definition} (\texttt{gv\_def} na rysunku). Za każdym razem gdy przetwarzamy przypisanie jakiejś wartości do danej zmiennej globalnej, tworzymy krawędź od tej wartości, do danego wierzchołka \texttt{gvar\_definition}. Odpowiednio, przetwarzając referencję zmiennej globalnej, tworzymy krawędź od \texttt{gvar\_definition} do tej wartości. W ten sposób, funkcja wnioskująca typy przekaże wszystkie możliwe przypisania danej zmiennej globalnej do wszystkich ich wystąpień w programie.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.4]{imgs/msc-gvars.png}
+	\caption{Budowanie grafu dla zmiennych globalnych}
+\end{figure}
 
 \subsection{Klasy i moduły}
 
