@@ -1,3 +1,4 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
 \babel@toc {english}{}
 \babel@toc {polish}{}
 \babel@toc {english}{}
@@ -9,51 +10,97 @@
 \babel@toc {polish}{}
 \babel@toc {english}{}
 \babel@toc {polish}{}
+\defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {1.}Wprowadzenie}{7}{chapter.1}
+\defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {1.1.}Za\IeC {\l }o\IeC {\.z}enia i cele}{7}{section.1.1}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {1.1.1.}Utrudnienia w j\IeC {\k e}zykach s\IeC {\l }abo typowanych}{7}{subsection.1.1.1}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {1.1.2.}Utrudnienia w Ruby}{8}{subsection.1.1.2}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {1.1.3.}Aktualny stan}{8}{subsection.1.1.3}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {1.1.4.}Za\IeC {\l }o\IeC {\.z}enia i cele}{9}{subsection.1.1.4}
+\defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {2.}Rozwi\IeC {\k a}zanie}{11}{chapter.2}
+\defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {2.1.}Architektura}{11}{section.2.1}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.1.1.}Protok\IeC {\'o}\IeC {\l } komunikacji z edytorem tekstu}{11}{subsection.2.1.1}
-\contentsline {section}{\numberline {2.2.}Proces pozyskiwania informacji (?)}{11}{section.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.2.}Proces pozyskiwania informacji}{11}{section.2.2}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.2.1.}Funkcjonalno\IeC {\'s}ci}{11}{subsection.2.2.1}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsubsection}{Informacja o typie zmiennej}{12}{section*.2}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsubsection}{Skok do definicji}{12}{section*.3}
+\defcounter {refsection}{0}\relax 
 \contentsline {subsubsection}{Autouzupe\IeC {\l }nianie}{12}{section*.4}
-\contentsline {subsubsection}{Refactoring}{12}{section*.5}
-\contentsline {subsection}{\numberline {2.2.2.}Indeksowanie}{13}{subsection.2.2.2}
-\contentsline {section}{\numberline {2.3.}Budowanie grafu}{13}{section.2.3}
-\contentsline {subsection}{\numberline {2.3.1.}Wst\IeC {\k e}p}{13}{subsection.2.3.1}
-\contentsline {subsection}{\numberline {2.3.2.}Litera\IeC {\l }y}{13}{subsection.2.3.2}
-\contentsline {subsection}{\numberline {2.3.3.}Litera\IeC {\l }y tablic i s\IeC {\l }ownik\IeC {\'o}w}{14}{subsection.2.3.3}
-\contentsline {subsection}{\numberline {2.3.4.}Zmienne globalne}{14}{subsection.2.3.4}
-\contentsline {subsection}{\numberline {2.3.5.}Klasy i modu\IeC {\l }y}{14}{subsection.2.3.5}
-\contentsline {subsection}{\numberline {2.3.6.}Inne sta\IeC {\l }e}{15}{subsection.2.3.6}
-\contentsline {subsection}{\numberline {2.3.7.}Metody}{15}{subsection.2.3.7}
-\contentsline {subsection}{\numberline {2.3.8.}Zmienne lokalne}{15}{subsection.2.3.8}
-\contentsline {subsection}{\numberline {2.3.9.}Dziedziczenie}{16}{subsection.2.3.9}
-\contentsline {subsection}{\numberline {2.3.10.}Zmienne instancji}{16}{subsection.2.3.10}
-\contentsline {subsection}{\numberline {2.3.11.}attr reader, private}{16}{subsection.2.3.11}
-\contentsline {subsection}{\numberline {2.3.12.}Widzialno\IeC {\'s}\IeC {\'c} metod}{17}{subsection.2.3.12}
-\contentsline {subsection}{\numberline {2.3.13.}Wywo\IeC {\l }ania metod}{17}{subsection.2.3.13}
-\contentsline {subsection}{\numberline {2.3.14.}Wywo\IeC {\l }ania super}{17}{subsection.2.3.14}
-\contentsline {subsection}{\numberline {2.3.15.}Bloki i lambdy}{18}{subsection.2.3.15}
-\contentsline {subsection}{\numberline {2.3.16.}Biblioteka standardowa}{18}{subsection.2.3.16}
-\contentsline {subsection}{\numberline {2.3.17.}self}{18}{subsection.2.3.17}
-\contentsline {subsection}{\numberline {2.3.18.}Named arguments}{18}{subsection.2.3.18}
-\contentsline {section}{\numberline {2.4.}Wnioskowanie typu}{18}{section.2.4}
-\contentsline {subsection}{\numberline {2.4.1.}Heurystyki obs\IeC {\l }ugi wywo\IeC {\l }a\IeC {\'n}}{19}{subsection.2.4.1}
-\contentsline {subsubsection}{Metoda klasowa}{20}{section*.6}
-\contentsline {subsubsection}{Konstruktor}{20}{section*.7}
-\contentsline {subsubsection}{Lambda}{20}{section*.8}
-\contentsline {section}{\numberline {2.5.}Future work}{20}{section.2.5}
-\contentsline {subsection}{\numberline {2.5.1.}More metaprogramming intelligence}{20}{subsection.2.5.1}
-\contentsline {subsection}{\numberline {2.5.2.}Bundler, gems and libraries}{20}{subsection.2.5.2}
-\contentsline {subsection}{\numberline {2.5.3.}YARD}{20}{subsection.2.5.3}
-\contentsline {subsection}{\numberline {2.5.4.}Rust implementation}{20}{subsection.2.5.4}
-\contentsline {subsection}{\numberline {2.5.5.}Caching}{20}{subsection.2.5.5}
-\contentsline {subsection}{\numberline {2.5.6.}Tracking effects, ex. exceptions}{20}{subsection.2.5.6}
-\contentsline {subsection}{\numberline {2.5.7.}Tracepoint}{20}{subsection.2.5.7}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2.2.}Indeksowanie}{12}{subsection.2.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {3.}Budowanie grafu}{15}{chapter.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.1.}Wst\IeC {\k e}p}{15}{section.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.2.}Litera\IeC {\l }y}{15}{section.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.3.}Litera\IeC {\l }y tablic}{16}{section.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.4.}S\IeC {\l }owniki}{16}{section.3.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.5.}Zmienne globalne}{17}{section.3.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.6.}Klasy i modu\IeC {\l }y}{18}{section.3.6}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.7.}Inne sta\IeC {\l }e}{18}{section.3.7}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.8.}Metody}{19}{section.3.8}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.9.}Zmienne lokalne}{19}{section.3.9}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.10.}Dziedziczenie}{19}{section.3.10}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.11.}Zmienne instancji}{20}{section.3.11}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.12.}Eigenclass}{20}{section.3.12}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.13.}attr\_reader, attr\_writer}{21}{section.3.13}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.14.}Widzialno\IeC {\'s}\IeC {\'c} metod}{21}{section.3.14}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.15.}Wywo\IeC {\l }ania metod}{23}{section.3.15}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.16.}Wywo\IeC {\l }ania super}{23}{section.3.16}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.17.}Bloki i lambdy}{23}{section.3.17}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.18.}Biblioteka standardowa}{24}{section.3.18}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.19.}self}{25}{section.3.19}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.20.}Wyj\IeC {\k a}tki}{25}{section.3.20}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.21.}P\IeC {\k e}tle}{25}{section.3.21}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.22.}Return}{25}{section.3.22}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {4.}Wnioskowanie typu}{27}{chapter.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.1.}Typy}{27}{section.4.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.2.}Funkcja wnioskuj\IeC {\k a}ca typy}{28}{section.4.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.3.}Heurystyki obs\IeC {\l }ugi wywo\IeC {\l }a\IeC {\'n}}{29}{section.4.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.4.}Obs\IeC {\l }uga wywo\IeC {\l }ania}{31}{section.4.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.5.}Wywo\IeC {\l }ania funkcji polimorficznych}{34}{section.4.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.6.}Inne wierzcho\IeC {\l }ki specjalne}{34}{section.4.6}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4.7.}Pozosta\IeC {\l }e wierzcho\IeC {\l }ki}{35}{section.4.7}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {5.}Podsumowanie}{37}{chapter.5}

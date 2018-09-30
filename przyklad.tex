@@ -3,8 +3,19 @@
 % drugiej stronie pracy ma byc skladany wzor oswiadczenia o autorskim wykonaniu.
 \documentclass[declaration,shortabstract]{iithesis}
 
+\usepackage[polish]{babel}
+
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+
+\usepackage{amsmath}
+\usepackage[linesnumbered,ruled]{algorithm2e}
+%\algsetup{linenosize=\small}
+\newcommand{\algsize}{\small}
+\SetAlgorithmName{Algorytm}{Lista algorytmów} 
+
+\usepackage[style=numeric, citestyle=numeric, natbib=true]{biblatex}
+\bibliography{bibliografia}
 
 %%%%% DANE DO STRONY TYTUŁOWEJ
 % Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
@@ -14,8 +25,12 @@
 % polecenia \fmlinebreak.
 \polishtitle    {Analiza statyczna języka Ruby}
 \englishtitle   {Static analysis for Ruby language}
-\polishabstract {\ldots}
-\englishabstract{\ldots}
+\polishabstract {
+    Współcześni programiści mogą wybierać spośród wielu różnych edytorów tekstu do edycji kodu źródłowego. Jedną z rzeczy ułatwiających ich pracę jest wsparcie edytora dla danego języka programowania pozwalające na szybkie poruszanie się po definicjach lub podpowiedzi podczas edycji kodu. Praca ma na celu opisanie wtyczki, która dzięki analizie statycznej kodu źródłowego dostarcza te funkcjonalności programistom języka Ruby. Z powodu dynamicznej natury tego języka, analiza statyczna jest wymaga wielu heurystyk i równowagi pomiędzy bezpieczeństwem analizy a użytecznością dla programistów.
+}
+\englishabstract{
+    Currently programmers have ability to choose from variety of text editors to edit source code. Editor support for programming languages is one of the features allowing programmers to accurate jumping to definitions or providing him with suggestions when editing source code. The purpose of this master's thesis is to describe the plug-in delivering these functionalities to Ruby programmers thanks to static code analysis. Due to Ruby's dynamic nature, static analysis require multiple heuristics and balancing between analysis' safety and usefulness for programmers.
+}
 % w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
 \author         {Rafał Łasocha}
 % w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
@@ -54,7 +69,7 @@ W szczególności istnieją zintegrowane środowiska programistyczne (IDE), któ
 \item autouzupełnianie pełnej nazwy aktualnie pisanej stałej, zmiennej lub nazwy funkcji
 \end{itemize}
 
-Niniejsza praca przedstawia jak można wykorzystać analizę statyczną plików źródłowych, aby dostarczyć powyższe funkcjonalności w języku Ruby, który z racji swojej dynamicznej natury stawia pewne problemy nie występujące w językach statycznie typowanych.
+Niniejsza praca przedstawia jak można wykorzystać analizę statyczną plików źródłowych, aby dostarczyć powyższe funkcjonalności w języku Ruby \cite{RUBY}, który z racji swojej dynamicznej natury stawia pewne problemy nie występujące w językach statycznie typowanych.
 
 \section{Założenia i cele}
 
@@ -77,15 +92,15 @@ W języku Ruby, o którym jest ta praca, statyczne wywnioskowanie typu wyrażeni
 
 \subsection{Aktualny stan}
 
-Do tworzenia oprogramowania w Ruby, programiści najczęściej wykorzystują Rubymine IDE lub edytory tekstu wspierane wtyczkami, takie jak Vim, Emacs czy Atom (przypis: strzał na razie, ale nic istotnego to nie zmieni).
-Rubymine dostarcza funkcjonalności wspomnianych we wstępie, jednak jest to narzędzie płatne i zamknięte.
+Do tworzenia oprogramowania w Ruby, programiści najczęściej wykorzystują RubyMine IDE \cite{RUBYMINE} lub edytory tekstu wspierane wtyczkami, takie jak Vim \cite{VIM}, Emacs \cite{EMACS} czy Atom \cite{ATOM}.
+RubyMine dostarcza funkcjonalności wspomnianych we wstępie, jednak jest to narzędzie płatne i zamknięte.
 Edytory tekstu same w sobie nie posiadają tych funkcjonalności, ale istnieją wtyczki, które w jakiejś części te funkcjonalności dostarczają. Jak to bywa z analizą statyczną, efektywność tych narzędzi to pewne spektrum, jedne narzędzia dostarczają lepsze autouzupełnianie, a inne gorsze. Nie jest to binarne i jakość tych funkcjonalności ma duże znaczenie dla programisty.
 Najpopularniejsze wtyczki to:
 \begin{itemize}
-\item CTags - zbiera symbole z całego projektu i ich lokalizacje, nie radzi sobie w żaden sposób z metaprogramowaniem i nie potrafi dostarczyć tych funkcjonalności zależnie od kontekstu (np. skok do definicji metody zależy od miejsca, w którym ją się wywołuje)
-\item Robe - dostarcza informacje zależne od kontekstu, ale wykorzystuje bardzo proste heurystyki do zawężenia wyników
-\item Solargraph - dostarcza podobne funkcjonalności do tych wymienionych we wstępie, stosuje do tego analizę statyczną oraz wykorzystuje inne źródła (takie jak dokumentacja YARD)
-\item RGL - odmiennie od pozostałych narzędzi, dostarcza system typów i inferencję typów do Ruby. Wymaga jednak adnotacji klas i metod, tj. inferencja typów zachodzi tylko w ``otypowanych'' przez programistę metodach.
+\item CTags (\cite{CTAGS}) -- zbiera symbole z całego projektu i ich lokalizacje, nie radzi sobie w żaden sposób z metaprogramowaniem i nie potrafi dostarczyć tych funkcjonalności zależnie od kontekstu (np. skok do definicji metody zależy od miejsca, w którym ją się wywołuje)
+\item Robe (\cite{ROBE}) -- dostarcza informacje zależne od kontekstu, ale wykorzystuje bardzo proste heurystyki do zawężenia wyników
+\item Solargraph (\cite{SOLARGRAPH}) -- dostarcza podobne funkcjonalności do tych wymienionych we wstępie, stosuje do tego analizę statyczną oraz wykorzystuje inne źródła (takie jak dokumentacja YARD \cite{YARD})
+\item RGL (\cite{RDL}) -- odmiennie od pozostałych narzędzi, dostarcza system typów i inferencję typów do Ruby. Wymaga jednak adnotacji klas i metod, tj. inferencja typów zachodzi tylko w ``otypowanych'' przez programistę metodach.
 \end{itemize}
 
 \subsection{Założenia i cele}
@@ -110,11 +125,11 @@ Architektura wtyczki jest dwuczęściowa:
 
 \subsection{Protokół komunikacji z edytorem tekstu}
 
-We wtyczce wykorzystywany jest LSP (\textit{Language Server Protocol}).
+We wtyczce wykorzystywany jest LSP (\textit{Language Server Protocol}, \cite{LSP}).
 Jest to protokół standaryzujący komunikację pomiędzy edytorami tekstu a serwerami dostarczającymi informacji o projekcie.
 Dzięki temu, chcąc napisać serwer, który potrafi komunikować się z $n$ edytorami tekstu, wystarczy zaimplementować w tym serwerze protokół LSP, który wspiera edytor tekstu (również często przez oddzielną wtyczkę). Ta część jest czysto inżynieryjna, więc w dalszej części pracy skupię się tylko na algorytmach wykorzystywanych w serwerze.
 
-\section{Proces pozyskiwania informacji (?)}
+\section{Proces pozyskiwania informacji}
 
 \subsection{Funkcjonalności}
 
@@ -133,9 +148,9 @@ Mówimy o języku dynamicznie typowanym, więc w dalszej części pracy zostanie
 
 Programista często chce dowiedzieć się jak wyglądają definicje różnych bytów, takich jak zmienne lokalne, stałe czy metody w kodzie źródłowym.
 
-Przypadek zmiennej lokalnej jest nieskomplikowany i rzadko potrzebny, ponieważ krótkie metody z reguły powodują że definicja jest widoczna na pierwszy rzut oka. Inaczej jest w przypadku stałej. Wbrew pozorom, odszukanie takiej definicji nie jest proste, ponieważ w Rubim stałe mogą być przypisywane ponownie (sic), a reguły zagnieżdżania i referencji nie są łatwe (z reguły są zrozumiałe dla osób z kilkuletnim doświadczeniem).
+Przypadek zmiennej lokalnej jest nieskomplikowany i rzadko potrzebny, ponieważ krótkie metody z reguły powodują że definicja jest widoczna na pierwszy rzut oka. Inaczej jest w przypadku stałej. Wbrew pozorom, odszukanie takiej definicji nie jest proste, ponieważ w Ruby stałe mogą być przypisywane ponownie (sic), a reguły zagnieżdżania i referencji nie są łatwe (z reguły są zrozumiałe dla osób z kilkuletnim doświadczeniem).
 
-Jednak najtrudniejszą część, a jednocześnie najbardziej potrzebną jest skok do definicji metody. Metoda jest wywoływana na jakimś obiekcie, więc musimy znać ``typ'' zmiennej aby zlokalizować odpowiednią definicję.
+Jednak najtrudniejszą część, a jednocześnie najbardziej potrzebną jest skok do definicji metody. Metoda jest wywoływana na jakimś obiekcie, więc musimy znać \enquote{typ} zmiennej aby zlokalizować odpowiednią definicję.
 
 \subsubsection{Autouzupełnianie}
 
@@ -146,91 +161,112 @@ Pisząc kod, programista chce uniknąć napisania błędnej nazwy metody i pomag
 Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowanie to spora część frontendu typowego interpretera, zawierający analizę leksykalną, składniową i semantyczną. Proces ten polega na trzech etapach:
 \begin{enumerate}
 \item Sparsowaniu pliku źródłowego do AST (\textit{abstract syntax tree})
-\item Przejście przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz jednocześnie zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku.
+\item Przejście przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz jednocześnie zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku. Idea algorytmu budującego graf przepływu dla danych bazującego na AST została zaczerpnięta z pracy \citet*{FICA}, która miała na celu optymalizację kompilatorów dla obiektowych języków programowania.
 \item Uruchomienie funkcji wnioskującej typ wszystkich wierzchołków na podstawie informacji w grafie i hierarchii klas.
 \end{enumerate}
 
-\section{Budowanie grafu}
+\chapter{Budowanie grafu}
 
-\subsection{Wstęp}
+\section{Wstęp}
 
 Graf który budujemy jest skierowany i może zawierać cykle. Wierzchołki są etykietowane, tj. każdy wierzchołek ma swój ``rodzaj'' oraz być może dodatkowe parametry (zależnie od rodzaju). Ponadto wierzchołek może mieć przypisaną lokalizację w kodzie źródłowym. Lokalizacja składa się ze ścieżki do pliku, pozycji początkowej w kodzie źródłowym (numer linii i numer kolumny) oraz pozycji końcowej w kodzie źródłowym. Krawędzie są nieetykietowane.
 
-\subsection{Literały}
+\section{Literały}
 
-Na początek warto popatrzeć na najprostsze AST, czyli literały. AST literału liczby całkowitej (np. \texttt{42}) zostanie przekształcony na pojedyńczy wierzchołek rodzaju \texttt{int}. Rodzaj będzie potrzebny funkcji wnioskującej typy, która na podstawie rodzaju, dodatkowych parametrów wierzchołka oraz wierzchołków z krawędzi wejściowych będzie decydowała jakiego typu jest dany wierzchołek. W tym prostym przypadku wierzchołek nie ma żadnych parametrów i nie zwracamy uwagi na krawędzie wejściowe (bo ich, z metody budowania grafu, dla wierzchołka tego rodzaju nawet nie będzie) tylko przypisujemy wszystkim wierzchołkom rodzaju \texttt{int} typ \texttt{Nominal(Integer)}.
+Na początek warto popatrzeć na najprostsze AST, czyli literały. AST literału liczby całkowitej (np. \texttt{42}) zostanie przekształcony na pojedyńczy wierzchołek rodzaju \texttt{int} (Rys. \ref{fig:graph-int}). Rodzaj będzie potrzebny funkcji wnioskującej typy, która na podstawie rodzaju, dodatkowych parametrów wierzchołka oraz wierzchołków z krawędzi wejściowych będzie decydowała jakiego typu jest dany wierzchołek. W tym prostym przypadku wierzchołek nie ma żadnych parametrów i nie zwracamy uwagi na krawędzie wejściowe (bo ich, z metody budowania grafu, dla wierzchołka tego rodzaju nawet nie będzie) tylko przypisujemy wszystkim wierzchołkom rodzaju \texttt{int} typ \texttt{Nominal(Integer)}.
 
 \begin{figure}[htb]
 	\centering
 	\includegraphics[scale=0.4]{imgs/msc-int.png}
 	\caption{Budowanie grafu dla literału liczby całkowitej}
-	%\label{fig:graph-int}
+        Po lewej kod źródłowy, po prawej graf zbudowany z tego kodu źródłowego.
+	\label{fig:graph-int}
 \end{figure}
 
 Tak samo jest z literałami liczbami wymiernych, zmiennopozycyjnych, zespolonych oraz wartości \texttt{true}, \texttt{false} oraz \texttt{nil}.
 
-Podobnie sytuacja ma się w przypadku literałów tekstowych (wierzchołek rodzaju \texttt{str}) oraz symboli (wierzchołek rodzaju \texttt{sym}). Drobna różnica jest taka, że tekst może być z interpolacją (np. \texttt{``foo\#\{somevariable\}bar''}), a w takim przypadku najpierw rekurencyjnie przetwarzamy wszystkie interpolowane (?) wyrażenia, ponieważ typ wyrażeń interpolowanych też może być potrzebny programiście. Jednakże, funkcja wnioskująca przypisuje wierzchołkowi rodzaju \texttt{str} zawsze typ \texttt{Nominal(String)} niezależnie od krawędzi wejściowych. Analogicznie jest w przypadku symboli.
+Podobnie sytuacja ma się w przypadku literałów tekstowych (wierzchołek rodzaju \texttt{str}) oraz symboli (wierzchołek rodzaju \texttt{sym}). Drobna różnica jest taka, że tekst może być z interpolacją (np. \texttt{``foo\#\{somevariable\}bar''}), a w takim przypadku najpierw rekurencyjnie przetwarzamy wszystkie interpolowane wyrażenia, ponieważ typ wyrażeń interpolowanych też może być potrzebny programiście. Jednakże, funkcja wnioskująca przypisuje wierzchołkowi rodzaju \texttt{str} zawsze typ \texttt{Nominal(String)} niezależnie od krawędzi wejściowych. Analogicznie jest w przypadku symboli.
 
-\subsection{Literały tablic}
+\section{Literały tablic}
 
-Pierwszym ciekawym przypadkiem jest literał tablicy, np. \texttt{[42, ``string'']}. Dla takiego AST, najpierw budujemy wierzchołki dla wszystkich poddrzew - w tym przykładzie dostaniemy dwa wierzchołki, odpowiednio rodzaju \texttt{int} oraz \texttt{str}. Następnie dodajemy wierzchołek rodzaju \texttt{array}, który będzie wynikiem przetwarzania tego AST, oraz dodamy krawędzie z wierzchołków \texttt{int} i \texttt{str} do wierzchołka \texttt{array}.
+Pierwszym ciekawym przypadkiem jest literał tablicy, np. \texttt{[42, ``string'']} (Rys. \ref{fig:graph-array}). Dla takiego AST, najpierw budujemy wierzchołki dla wszystkich poddrzew - w tym przykładzie dostaniemy dwa wierzchołki, odpowiednio rodzaju \texttt{int} oraz \texttt{str}. Następnie dodajemy wierzchołek rodzaju \texttt{array}, który będzie wynikiem przetwarzania tego AST, oraz dodamy krawędzie z wierzchołków \texttt{int} i \texttt{str} do wierzchołka \texttt{array}.
 
 \begin{figure}[htb]
 	\centering
 	\includegraphics[scale=0.4]{imgs/msc-array.png}
 	\caption{Budowanie grafu dla literału tablicy}
+	\label{fig:graph-array}
 \end{figure}
 
 Funkcja wnioskująca typ dla wierzchołka rodzaju \texttt{array} zawsze patrzy na typy wszystkich wierzchołków krawędzi wejściowych, tworzy z nich jeden typ Union -- w naszym przykładzie \texttt{Union(Integer or String)} oraz finalnie przypisuje temu wierzchołkowi typ parametryzowany \texttt{Generic(Array)<Union(Integer or String)>}.
 
-\subsection{Słowniki}
+\section{Słowniki}
 
-W słownikach zarówno klucze i wartości mogą być różnego typu. Literał budowania słownika może również w sobie zawierać klucze (i oczywiście wartości), które nie są literałami. Przetwarzając literał słownika, budujemy trzy wierzchołki: \texttt{hash}, \texttt{hash\_keys} i \texttt{hash\_values}. Następnie przetwarzamy wszystkie klucze, oraz dodajemy dla każdego klucza krawędź pomiędzy wierzchołkiem wyrażenia klucza, a wierzchołkiem \texttt{hash\_keys}. Podobnie przetwarzamy wszystkie wartości i dodajemy krawędź pomiędzy wierzchołkami wartości, a wierzchołkiem \texttt{hash\_values}. Na końcu, dodajemy dwie krawędzie: pomiędzy \texttt{hash\_keys} oraz \texttt{hash} i \texttt{hash\_values} oraz \texttt{hash}.
+W słownikach zarówno klucze i wartości mogą być różnego typu. Literał budowania słownika może również w sobie zawierać klucze (i oczywiście wartości), które nie są literałami. Przetwarzając literał słownika, budujemy trzy wierzchołki: \texttt{hash}, \texttt{hash\_keys} i \texttt{hash\_values} (Rys. \ref{fig:graph-hash}). Następnie przetwarzamy wszystkie klucze, oraz dodajemy dla każdego klucza krawędź pomiędzy wierzchołkiem wyrażenia klucza, a wierzchołkiem \texttt{hash\_keys}. Podobnie przetwarzamy wszystkie wartości i dodajemy krawędź pomiędzy wierzchołkami wartości, a wierzchołkiem \texttt{hash\_values}. Na końcu, dodajemy dwie krawędzie: pomiędzy \texttt{hash\_keys} oraz \texttt{hash} i \texttt{hash\_values} oraz \texttt{hash}.
 
 Funkcja wnioskująca typ dla wierzchołka rodzajów \texttt{hash\_keys} oraz \texttt{hash\_values} działa grupująco - tj. zbiera wszystkie typy z wierzchołków z krawędzi wejściowych i łączy je w jeden typ \texttt{Union(...)}.
 Funkcja typująca wierzchołek \texttt{hash} patrzy na rodzaje wierzchołków i buduje finalny typ \texttt{GenericType(Hash)<typ otrzymany z hash\_keys, typ otrzymany z hash\_values>}.
 
-\subsection{Zmienne globalne}
 
-W ogólności nie możemy wiedzieć w jakiej kolejności zostaną zmienne globalne, więc zakładamy, że w momencie referencji zmiennej globalnej jej wartość może pochodzić z dowolnego przypisania tej zmiennej w całym kodzie źródłowym. W tym celu, dla każdego identyfikatora (nie wystąpienia!) zmiennej globalnej tworzymy specjalny wierzchołek rodzaju \texttt{gvar\_definition} (\texttt{gv\_def} na rysunku). Za każdym razem gdy przetwarzamy przypisanie jakiejś wartości do danej zmiennej globalnej, tworzymy krawędź od tej wartości, do danego wierzchołka \texttt{gvar\_definition}. Odpowiednio, przetwarzając referencję zmiennej globalnej, tworzymy krawędź od \texttt{gvar\_definition} do tej wartości. W ten sposób, funkcja wnioskująca typy przekaże wszystkie możliwe przypisania danej zmiennej globalnej do wszystkich ich wystąpień w programie.
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.4]{imgs/hash.png}
+	\caption{Budowanie grafu dla literału słownika}
+	\label{fig:graph-hash}
+\end{figure}
+
+\section{Zmienne globalne}
+
+W ogólności nie możemy wiedzieć w jakiej kolejności zostaną przypisane zmienne globalne, więc zakładamy, że w momencie referencji zmiennej globalnej jej wartość może pochodzić z dowolnego przypisania tej zmiennej w całym kodzie źródłowym. W tym celu, dla każdego identyfikatora (nie wystąpienia!) zmiennej globalnej tworzymy specjalny wierzchołek rodzaju \texttt{gvar\_definition} (\texttt{gv\_def} na rysunku \ref{fig:graph-gvars}). Za każdym razem gdy przetwarzamy przypisanie jakiejś wartości do danej zmiennej globalnej, tworzymy krawędź od tej wartości, do danego wierzchołka \texttt{gvar\_definition}. Odpowiednio, przetwarzając referencję zmiennej globalnej, tworzymy krawędź od \texttt{gvar\_definition} do tej wartości. W ten sposób, funkcja wnioskująca typy przekaże wszystkie możliwe przypisania danej zmiennej globalnej do wszystkich ich wystąpień w programie.
 
 \begin{figure}[htb]
 	\centering
 	\includegraphics[scale=0.4]{imgs/msc-gvars.png}
 	\caption{Budowanie grafu dla zmiennych globalnych}
+	\label{fig:graph-gvars}
 \end{figure}
 
-\subsection{Klasy i moduły}
+\section{Klasy i moduły}
 
 Funkcja budująca graf, przyjmuje jako zależność instancję Bazy danych - na początku przetwarzania projektu pustą. W bazie przechowujemy wszystkie informacje, które pozwalają nam szybko odpowiadać na żądania, które wysyła do nas użytkownik. Dlatego też przechowujemy tam informacje np. o znalezionych podczas budowania grafu definicjach stałych i metod.
 
-Podczas przechodzenia przez AST pliku, przetwarzając wierzchołek definicji klasy lub modułu, zapisujemy tę definicję w bazie. W Ruby klasa (i moduł) są wartościami, więc odrębnie zapisujemy definicję klasy (i informację np. o jej rodzicu), a oddzielnie fakt, że klasa ta została przypisana do pewnej stałej. Pozwala to na wspieranie otwartych klas, oraz w przyszłości (przyp: mogę w sobie w pracy magisterskiej mówić o 'przyszlosci'?) klas/modułów anonimowych.
+Podczas przechodzenia przez AST pliku, przetwarzając wierzchołek definicji klasy lub modułu, zapisujemy tę definicję w bazie. W Ruby klasa (i moduł) są wartościami, więc odrębnie zapisujemy definicję klasy (i informację np. o jej rodzicu), a oddzielnie fakt, że klasa ta została przypisana do pewnej stałej. Pozwala to na wspieranie otwartych klas, oraz w przyszłości klas/modułów anonimowych.
 
-Funkcja budująca graf jest funkcją rekurencyjną przekazującą sobie dwa argumenty: podgraf AST do przetworzenia, oraz kontekst. Kontekst przechowuje kilka informacji o aktualnym stanie budowania grafu. Po pierwsze, wie w jakim zagnieżdżeniu klas / modułów jesteśmy, oraz jeżeli aktualnie przetwarzamy definicję metody, to co to jest za metoda. W kontekście staramy się również w miarę możliwości śledzić czym jest aktualnie \texttt{self}. Ponadto, mamy słownik mapujący identyfikatory obecnych zmiennych lokalnych do ich możliwych definicji (w stylu klasycznej analizy statycznej \textit{Reaching Definitions}). Wreszcie, trzymamy w nim też krótką informację o aktualnie zadeklarowanej widzialności definiowanych metod (publiczne, prywatne lub chronione).
+Funkcja budująca graf jest funkcją rekurencyjną przekazującą sobie dwa argumenty: podgraf AST do przetworzenia, oraz kontekst. Kontekst przechowuje kilka informacji o aktualnym stanie budowania grafu. Po pierwsze, wie w jakim zagnieżdżeniu klas / modułów jesteśmy, oraz jeżeli aktualnie przetwarzamy definicję metody, to co to jest za metoda. W kontekście staramy się również w miarę możliwości śledzić czym jest aktualnie \texttt{self}. Ponadto, mamy słownik mapujący identyfikatory obecnych zmiennych lokalnych do ich możliwych definicji (w stylu klasycznej analizy statycznej \emph{Reaching Definitions}). Wreszcie, trzymamy w nim też krótką informację o aktualnie zadeklarowanej widzialności definiowanych metod (publiczne, prywatne lub chronione).
 
-\subsection{Inne stałe}
+\section{Inne stałe}
 
-Ponieważ zdefiniowane stałe mają domyślnie globalną widzialność oraz mogą być przypisywane ponownie, ich przypisywanie nie różni się bardzo od zwykłych zmiennych globalnych. Po pierwsze, odróżnia je to, że nie są prostym identyfikatorem (jak \texttt{\$foo}), ale złożonym z kilku, niekoniecznie statycznych (jeśli \texttt{x = Foo} to \texttt{x::Bar} jest poprawną referencją do \texttt{Foo::Bar}), więc wymagają specjalnych struktur danych w bazie, algorytmu rozwiązywania tych referencji i (przez to, że referencje mogą być dynamiczne) niekoniecznie są zawsze obliczalne w statycznej analizie.
+Ponieważ zdefiniowane stałe mają domyślnie globalną widzialność oraz mogą być przypisywane ponownie, ich obsługa nie różni się bardzo od zwykłych zmiennych globalnych. Po pierwsze, odróżnia je to, że nie są prostym identyfikatorem (jak \texttt{\$foo}), ale złożonym z kilku, niekoniecznie statycznych (jeśli \texttt{x = Foo} to \texttt{x::Bar} jest poprawną referencją do \texttt{Foo::Bar}), więc wymagają specjalnych struktur danych w bazie, algorytmu rozwiązywania tych referencji i (przez to, że referencje mogą być dynamiczne) niekoniecznie są zawsze obliczalne w statycznej analizie.
 
 Jest to też pierwsze miejsce, w którym stosujemy heurystyki bazujące na popularnych idiomach w Ruby. Przykładowo, w wyrażeniu \texttt{NetworkError = Class.new(StandardError)} najpierw tworzymy klasę anonimową dziedziczącą po klasie \texttt{StandardError}, a następnie przypisujemy ją do stałej \texttt{NetworkError}. Normalnie, nie wiedzielibyśmy o tym, że \texttt{NetworkError} jest klasą (bo nie śledzimy wartości), ale stosujemy heurystykę szukającą wyrażenia wg wzoru \texttt{X = Class.new(Y)}. Jeżeli heurystyka znalazła takie wyrażenie, to postępujemy z nim podobnie jak z definicją klasy. W przeciwnym przypadku, jak z definicją zwykłej stałej.
 
-\subsection{Metody}
+\section{Metody}
 
-Podobnie jak jest to ze stałymi, podczas budowania grafu zapisujemy w Bazie znalezione definicje metod. Dokładniej, zapisujemy nazwę, identyfikator definicji klasy/modułu wewnątrz której została metoda zdefiniowana, drzewo argumentów formalnych (w Ruby argumenty formalne przez dekonstruktory mają postać drzewa), widoczność, oraz lokalizację w pliku. Zapisujemy też w bazie wierzchołki odpowiadające argumentom formalnym i wartości zwracanej przez metodę.
+Podobnie jak jest to ze stałymi, podczas budowania grafu zapisujemy w Bazie znalezione definicje metod. Dokładniej, zapisujemy nazwę, identyfikator definicji klasy/modułu wewnątrz której została metoda zdefiniowana, drzewo argumentów formalnych (w Ruby argumenty formalne przez dekonstruktory mają postać drzewa), widoczność, oraz lokalizację w pliku. Zapisujemy też w bazie wierzchołki odpowiadające argumentom formalnym i wartości zwracanej przez metodę. Następnie ustawiamy tę metodę jako aktualnie przetwarzaną w kontekście i budujemy graf dla ciała tej metody.
 
-\subsection{Zmienne lokalne}
 
-Tak jak zostało to wspomniane, wierzchołki o przypisaniach zmiennych lokalnych są przechowywane w kontekście w postaci podobnej do klasycznej statycznej analizy \textit{Reaching Definitions}, więc są dość dokładne. Podczas przechodzenia przez AST, w kontekście przekazujemy słownik mapujący identyfikatory zmiennych lokalnych w aktualnym \textit{lexical scope} na możliwe przypisania danej zmiennej lokalnej, a dokładniej -- wierzchołki tych przypisań.
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{imgs/method.png}
+	\caption{Zapisywanie informacji o metodzie do bazy danych}
+	\label{fig:build-method}
+\end{figure}
 
-\subsection{Dziedziczenie}
+\section{Zmienne lokalne}
+
+Tak jak zostało to wspomniane, wierzchołki o przypisaniach zmiennych lokalnych są przechowywane w kontekście w postaci podobnej do klasycznej statycznej analizy \textit{Reaching Definitions}, więc są dość dokładne. Podczas przechodzenia przez AST, w kontekście przekazujemy słownik mapujący identyfikatory zmiennych lokalnych w aktualnym zasięgu leksykalnym (ang. \emph{lexical scope}) na możliwe przypisania danej zmiennej lokalnej, a dokładniej -- wierzchołki tych przypisań.
+
+
+
+\section{Dziedziczenie}
 
 Ruby wspiera wiele rodzajów dziedziczenia, ale poszczególne konstrukty nie są od siebie istotnie różne. Jednak ponieważ to po czym dziedziczymy, składniowo, nie musi być identyfikatorem, ale może być dowolnym wyrażeniem (więc poprawne są konstrukty typu \texttt{class Foo < \$x} czy \texttt{class Foo < self}), znowu niemożliwa jest w pełni poprawna analiza. Aktualnie ograniczamy się tylko do obsługiwania sytuacji gdy to po czym dziedziczymy jest poprawnym identyfikatorem stałej, w przeciwnym wypadku ignorujemy to wyrażenie. W przyszłości łatwo można by wprowadzić heurystykę pozwalającą np. na dziedziczenie po strukturach (\texttt{class Foo < Struct.new(:field)}), ponieważ jest kilka takich idiomatycznych przypadków w których dziedziczymy po wyrażeniach nie będących identyfikatorami.
 
-\subsection{Zmienne instancji}
+\section{Zmienne instancji}
 
-Skoro Ruby jest językiem obiektowym, nie może zabraknąć zmiennych instancji. Aktualnie traktujemy je w podobny sposób jak zmienne globalne - nie próbujemy śledzić dokładnego flow, tylko zbieramy wszystkie możliwe przypisania zmiennych instancji, wszystkie możliwe użycia, i je łączymy ze sobą przez wierzchołek pośredni \texttt{ivar\_definition}. Aktualnie ignorujemy fakt, że zmienna \texttt{@x} w klasie \texttt{Foo} i \texttt{Bar} jest tą samą zmienną, jeśli \texttt{Bar} jest rodzicem \texttt{Foo}, ale łatwo rozszerzyć kod o tę funkcjonalność (przyp: może to jeszcze zrobię w sumie, bo szkoda tego tłumaczenia).
+Skoro Ruby jest językiem obiektowym, nie może zabraknąć zmiennych instancji. Traktujemy je w podobny sposób jak zmienne globalne - nie próbujemy śledzić dokładnego przepływu, tylko zbieramy wszystkie możliwe przypisania zmiennych instancji, wszystkie możliwe użycia, i je łączymy ze sobą przez wierzchołek pośredni \texttt{ivar\_definition}. Aktualnie ignorujemy fakt, że zmienna \texttt{@x} w klasie \texttt{Foo} i \texttt{Bar} jest tą samą zmienną, jeśli \texttt{Bar} jest rodzicem \texttt{Foo}, ale łatwo rozszerzyć kod o tę funkcjonalność.
 
-\subsection{Eigenclass}
+\section{Eigenclass}
 
 Ruby, będąc językiem w pełni obiektowym, nie ma mechanizmu metod statycznych znanego np. z C++, ale ma podobnie działające tzw. metody klasowe. Klasy są obiektem, a jeżeli coś jest obiektem (instancją) to musi mieć również swoją klasę. Naturalnym wydawałoby się, że klasa jest instancją klasy \texttt{Class}, ale w Ruby mamy dodatkowy element -- każda definicja klasy tworzy dla tej klasy również \texttt{eigenclass}. Właściwym łańcuchem dziedziczenia jest więc \texttt{Foo < eigenclass Foo < Class}.
 
@@ -239,34 +275,86 @@ Otwierając definicję klasy (ale gdy ciągle nie jesteśmy wewnątrz definicji 
 Składnie te są reprezentowane przez konkretne wierzchołki, ale w miejscu \texttt{self} może być dowolne wyrażenie -- możemy więc napisać np. \texttt{def Foo.bar} i zdefiniować metodę na \textit{eigenclass} klasy \texttt{Foo} będąc wewnątrz kompletnie innej metody.
 Jednakże prawie zawsze jest to \texttt{self}, więc obsługujemy tylko tę składnię.
 Obsługa definicji metody wewnątrz \textit{eigenclass} (\texttt{def self.foo; ...; end}) lub definicji \textit{eigenclass} (\texttt{class << self; ...; end}) są bardzo podobne do zwykłej definicji metody lub klasy, z tą różnicą, że zamiast zdefiniować metodę na klasie, najpierw pobieramy z bazy \textit{eigenclass}, a dopiero potem dodajemy definicję.
-Jeśli \textit{eigenclass} nie ma, to dodajemy pustą definicję klasy jako tę właśnie \textit{eigenclass}.
+Jeśli \textit{eigenclass} nie ma, to dodajemy pustą definicję klasy jako tę właśnie \textit{eigenclass}. Następnie postępujemy tak jak ze zwykłą metodą, czyli budujemy graf dla ciała tej metody. Różnice w budowaniu metod definiowanych na \emph{eigenclass}, a zwykłymi metodami jest przedstawiona na Alg. \ref{alg:buildGraph-handleDef}.
+
+\begin{algorithm}
+    \algsize
+    \underline{function buildGraph} $(ast, context)$:\\
+    ...\\
+    \If(\tcp*[f]{ast dla `def foo ...`}){ast.type = 'def'}{
+        ...\\
+        database.addMethod(..., context.currentlyAnalyzedKlassId)\;
+        ...\\
+    }
+    \If(\tcp*[f]{ast dla `def self.foo ...`}){ast.type = 'defs'}{
+        ...\\
+        eigenclass = database.getEigenclassOf(context.currentlyAnalyzedKlassId)\;
+        database.addMethod(..., eigenclass.id)\;
+        ...\\
+    }
+    \caption{Fragmenty funkcji budującej obsługującej definiowanie metody instancji i metody klasowej}
+    \label{alg:buildGraph-handleDef}
+\end{algorithm}
 
 
-\subsection{attr reader, private}
+\section{attr\_reader, attr\_writer}
 
 Są wbudowane w Ruby metody \textit{klasowe}, które definiują inne metody, więc są już de facto metaprogramowaniem.
 W bibliotece standardowej Rubiego najpopularniejsze to \texttt{attr\_reader} i \texttt{attr\_writer}.
-\texttt{attr\_reader(:foo)} definiuje metodę odczytującą zmienną instancji, o takiej samej nazwie, jest więc odpowiednikiem kodu \texttt{def foo; @foo; end}. Oczywiście, \texttt{attr\_reader} przyjmuje dowolną liczbę argumentów, więc szybko można za jego pomocą zdefiniować wiele takich funkcji.
+\texttt{attr\_reader(:foo)} definiuje metodę odczytującą zmienną instancji, o takiej samej nazwie. Oczywiście, \texttt{attr\_reader} przyjmuje dowolną liczbę argumentów, więc szybko można za jego pomocą zdefiniować wiele takich funkcji.
 
-Tutaj funkcja budująca ucieka się do heurystyki wykrywającej użycie funkcji o nazwie \texttt{attr\_reader} i zamiast uznawać to wywołanie za zwykłe wywołanie metody, definiuje odpowiednią metodę dla każdego argumentu. Dodatkowo, ustawia lokalizację występowania definicji tak zdefiniowanej metody na linijkę z \texttt{attr\_reader}, więc programista, który użyje skoku do definicji łatwo dowie się, że metoda ta jest definiowana za pomocą \texttt{attr\_reader}. Bardzo podobnie jest z metodą \texttt{attr\_writer}, która definiuje przypisanie do zmiennej instancji (tzw. \textit{setter}).
+Tutaj funkcja budująca ucieka się do heurystyki wykrywającej użycie funkcji o nazwie \texttt{attr\_reader} i zamiast uznawać to wywołanie za zwykłe wywołanie metody, definiuje odpowiednią metodę dla każdego argumentu (Rys. \ref{fig:attr-reader}). Dodatkowo, ustawia lokalizację występowania definicji tak zdefiniowanej metody na linijkę z \texttt{attr\_reader}, więc programista, który użyje skoku do definicji łatwo dowie się, że metoda ta jest definiowana za pomocą \texttt{attr\_reader}. Bardzo podobnie jest z metodą \texttt{attr\_writer}, która definiuje przypisanie do zmiennej instancji (tzw. \textit{setter}, Rys. \ref{fig:attr-writer}).
 
-\subsection{Widzialność metod}
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{imgs/attr-reader.png}
+	\caption{Transformacja wywołania \texttt{attr\_reader}}
+	\label{fig:attr-reader}
+\end{figure}
 
-W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to - posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy mogą prawdopodobnie pojawić się w produkcyjnych programach -- natknąłem się na ten problem osobiście (przyp: nie wiem czy powinienem pisać takie rzeczy, w pierwszej osobie). Jednak z braku lepszego rozwiązania, stosujemy tutaj również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{imgs/attr-writer.png}
+	\caption{Transformacja wywołania \texttt{attr\_writer}}
+	\label{fig:attr-writer}
+\end{figure}
+
+\section{Widzialność metod}
+
+W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to - posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy mogą prawdopodobnie pojawić się w produkcyjnych programach -- autor tej pracy natknął się na taki przypadek osobiście. Jednak z braku lepszego rozwiązania, stosujemy tutaj również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
 
 
-\subsection{Wywołania metod}
+\begin{algorithm}
+    \algsize
+    \underline{function buildGraph} $(ast, context)$:\\
+    ...\\
+    \If{ast.type = 'send'}{
+        ...\\
+        \If{ast.messageName = 'private' and ast.sendObj = null}{
+            \For{$methodName \in getMethodNamesToChangeFromAst(ast)$}{
+                database.changeVisibility(context.currentlyAnalyzedKlassId, methodName, 'private')\;
+            }
+            return\;
+        }
+        ...\\
+    }
+    \caption{Fragment funkcji budującej obsługującej wywołanie funkcji}
+    \label{alg:buildGraph-handleSend}
+\end{algorithm}
+
+
+\section{Wywołania metod}
 
 Pomimo tego, że jest to prawdopodobnie najważniejszy AST, jego analiza podczas budowania grafu nie jest bardzo skomplikowana. Funkcja budująca przetwarza rekurencyjnie wyrażenie na którym wywoływana jest metoda oraz przekazywane argumenty. Następnie tworzy dodatkowy wierzchołek na wynik tej metody. Wreszcie, wszystkie te wierzchołki łączy w rekord i wrzuca do kolejki wywołań. Kolejka ta będzie używana dopiero podczas typowania.
 
-\subsection{Wywołania super}
+\section{Wywołania super}
 
 Wywołania \texttt{super} dzielą się na dwa rodzaje (i są to dwa różne wierzchołki AST). Pierwszy to zwykłe wywołanie \texttt{super(args)} znane z innych języków programowania, wywołujące odpowiadającą metodę z definicji rodzica i przekazującą podane do \texttt{super} argumenty. Analiza tego wywołania jest bardzo podobna do zwykłego wywołania metody poza tym, że do rekordu wywołania dopisujemy jeszcze identyfikator aktualnie przetwarzanej metody, aby łatwo znaleźć rodzica i odpowiadającą w nim metodę.
 
 Drugi rodzaj wywołania jest bezargumentowy, tj. \texttt{super}. W takim wypadku, wszystkie argumenty przekazane do tej metody są przez interpreter podane do tego bezargumentowego wywołania \texttt{super}, tj. metoda rodzica zostaje wywołana dokładnie z takimi samymi argumentami. W takim wypadku, jedyne co robimy to zapisujemy w bazie wierzchołek odpowiadający wywołaniu bezargumentowego \texttt{super}.
 
 
-\subsection{Bloki i lambdy}
+\section{Bloki i lambdy}
 
 Jak w większości współczesnych języków programowania, w Ruby również funkcje są \textit{first class citizens}, a więc są wartościami, które mogą być przypisywane do zmiennych i przekazywane jako argumenty. W Ruby są obecne też bloki, które są niczym innym jak przekazywaną do wywołania metody funkcją, którą można wywoływać wewnątrz metody za pomocą specjalnej składni \texttt{yield}. Każde użycie składni \texttt{yield} wewnątrz metody wywołuje tę funkcję i przekazuje do niej argumenty (jeśli zostały jakieś przekazane do \texttt{yield}).
 
@@ -277,7 +365,7 @@ Analizując blok, podejmujemy działania podobne, jak przy definiowaniu zwykłej
 % foo(&x)
 % foo(&:x)
 
-\subsection{Biblioteka standardowa}
+\section{Biblioteka standardowa}
 
 Ruby jest językiem interpretowanym, więc definicje podstawowych klas i metod są bezpośrednio w interpreterze. Interpreter jest napisany w C, więc tych definicji nie ma napisanych w Ruby. Aby nasza analiza była praktyczna, definicje biblioteki standardowej powinny być w pewien sposób obsłużone.
 
@@ -287,27 +375,27 @@ Cięższym przypadkiem są metody przetwarzania danych, takie jak \texttt{map} l
 
 Trzecią opcją byłoby zapisanie przez autora analizy tylko wzoru jak wygląda graf dla tej definicji metody, ale tworzenie świeżych wierzchołków i krawędzi tego grafu w każdym miejscu, w którym ta metoda jest wywoływana. Jest to rozwiązanie przyjęte w tej pracy. Oczywistą wadą jest większy rozmiar grafu, ale rozwiązanie to sprawdza się w praktycznych zastosowaniach.
 
-\subsection{self}
+\section{self}
 
 \texttt{self} jest konstrukcją języków zorientowanych obiektowo, która sprawia problemy przy analizie statycznej.
-Jest tak ponieważ \texttt{self} jest jednocześnie bardzo często używany (w szczególności właściwie wszystkie wywołania metod prywatnych to wywołania na wyrażeniu \texttt{self}) oraz jego dokładny typ jest trudny do określenia. Nasza analiza korzysta z bardzo uproszczonego założenia, że \texttt{self} jest zawsze typem odpowiadającym definicji klasy, w której jest użyte. W przyszłości jednak można by było spróbować z założeniem, że \texttt{self} jest typu odpowiadającym danej definicji klasy lub jednym z jej podklas. Z jednej strony, takie rozwiązanie byłoby bardziej bezpieczną analizą. Z drugiej strony, w każdym projekcie są klasy podstawowe, po których dziedziczy wiele innych definicji klas. W takich przypadkach bezpieczniejsze podejście mogłoby się okazać niepraktyczne, ponieważ \texttt{self} byłby typowany jako unia np. 100 różnych klas. (przyp: chyba te ostatnie dwa zdania trochę nieskładnie)
+Jest tak ponieważ \texttt{self} jest bardzo często używany (w szczególności właściwie wszystkie wywołania metod prywatnych to wywołania na wyrażeniu \texttt{self}) oraz jednocześnie jego dokładny typ jest trudny do określenia. Nasza analiza korzysta z bardzo uproszczonego założenia, że \texttt{self} jest zawsze typem odpowiadającym definicji klasy, w której jest użyte. W przyszłości jednak można by było spróbować z założeniem, że \texttt{self} jest typu odpowiadającego danej definicji klasy lub jednej z jej podklas. Z jednej strony, takie rozwiązanie byłoby bardziej bezpieczną analizą. Z drugiej strony, w każdym projekcie są klasy podstawowe, po których dziedziczy wiele innych definicji klas. W takich przypadkach bezpieczniejsze podejście mogłoby się okazać niepraktyczne, ponieważ \texttt{self} byłby typowany jako unia np. 100 różnych klas.
 
-\subsection{Wyjątki}
+\section{Wyjątki}
 
-Obsługa wyjątków nie jest skomplikowana i główną trudnością jest odpowiednie obsłużenie \textit{lexical scope} dla zmiennych lokalnych. Jedyną rzeczą wartą wspomnienia jest fakt, że \texttt{raise SomeError} jest pierwszym przykładem wyrażenia, któremu celowo przypisujemy podczas typowania typ \texttt{Bottom} (tj. brak typu), ponieważ nie zwraca to wyrażenie żadnej wartości.
+Obsługa wyjątków nie jest skomplikowana i główną trudnością jest odpowiednie obsłużenie zasięgu leksykalnego dla zmiennych lokalnych. Jedyną rzeczą wartą wspomnienia jest fakt, że \texttt{raise SomeError} jest pierwszym przykładem wyrażenia, któremu celowo przypisujemy podczas typowania typ \texttt{Bottom} (tj. brak typu), ponieważ nie zwraca to wyrażenie żadnej wartości.
 
-\subsection{Pętle}
+\section{Pętle}
 
-Pętle i słowa kluczowe z nimi związane (\texttt{break}, \texttt{next} itp.) również nie są zbyt interesujące. Po pierwsze dlatego, że z reguły wyrażenia związane z pętlami zwracają \texttt{nil} lub nic (tj. są typu \texttt{Bottom}), więc jedyne na co trzeba uważać to znowu, poprawne obsłużenie \textit{lexical scope} zmiennych lokalnych. Po drugie dlatego, że pętle w ruby są używane bardzo rzadko i iteracje w idiomatycznym Ruby wyraża się za pomocą funkcyjnych \texttt{map}, \texttt{filter}, \texttt{each} i innych.
+Pętle i słowa kluczowe z nimi związane (\texttt{break}, \texttt{next} itp.) również nie są zbyt interesujące. Po pierwsze dlatego, że z reguły wyrażenia związane z pętlami zwracają \texttt{nil} lub nic (tj. są typu \texttt{Bottom}), więc jedyne na co trzeba uważać, to znowu poprawne obsłużenie zasięgu leksykalnego zmiennych lokalnych. Po drugie dlatego, że pętle w ruby są używane bardzo rzadko i iteracje w idiomatycznym Ruby wyraża się za pomocą funkcyjnych \texttt{map}, \texttt{filter}, \texttt{each} i innych.
 
-\subsection{Return}
+\section{Return}
 
 Ruby posiada znane z innych języków programowania słowo kluczowe \texttt{return}, kończące wykonywanie funkcji i zwrócenie wartości jako wynik funkcji. Aby to wspierać, pobieramy z kontekstu wierzchołki aktualnie przetwarzanej metody, a wśród nich wierzchołek rodzaju \texttt{call\_result}. Jedyne co musimy zrobić to dodać krawędź pomiędzy wierzchołkiem wyrażenia przekazanego w \texttt{return}, a wierzchołkiem \texttt{call\_result} pobranym wcześniej z kontekstu.
 
 
-\section{Wnioskowanie typu}
+\chapter{Wnioskowanie typu}
 
-\subsection{Typy}
+\section{Typy}
 
 Mamy następujące typy:
 
@@ -321,9 +409,10 @@ Mamy następujące typy:
 \end{itemize}
 
 
-\subsection{Funkcja wnioskująca typy}
 
-Kiedy graf jest gotowy, przekazujemy go do funkcji wnioskującej typy wszystkich wierzchołków. Funkcja ta jest podzielona na kilka etapów.
+\section{Funkcja wnioskująca typy}
+
+Kiedy graf jest gotowy, przekazujemy go do funkcji wnioskującej typy wszystkich wierzchołków (Alg. \ref{alg:typeNodes} i \ref{alg:processNode}). Funkcja ta jest podzielona na kilka etapów.
 Do kolejki z wierzchołkami są na początku dodawane wszystkie wierzchołki, a typ wszystkich jest ustawiany na \texttt{Bottom}.
 Następnie przetwarzamy każdy wierzchołek (nazwijmy go \texttt{X}) z kolejki.
 Jeżeli po inferencji typu, typ wierzchołka \texttt{X} się zmienił, patrzymy na wszystkie krawędzie wychodzące z \texttt{X} i dodajemy docelowe wierzchołki tych krawędzi do kolejki, jeśli ich tam jeszcze nie ma.
@@ -331,60 +420,285 @@ Gdy przetworzymy wszystkie wierzchołki, przechodzimy do przetwarzania wywołań
 Wywołanie metody przetwarzamy tylko, jeśli wszystkie jej argumenty oraz obiekt na którym wywoływana jest metoda, są ukonkretnione (tj. żaden z nich nie jest typu \texttt{Bottom}).
 Następnie, w zależności od obliczonego typu wyrażenia na którym jest wywoływana metoda, oraz jej nazwy, zachodzi kilka heurystyk opisanych w następnych częściach.
 
-Schemat we wszystkich jest podobny i polega na znalezieniu w bazie definicji metody, która została wywołana, a następnie połączeniu wierzchołków argumentów wywołania (przyp: jest jakaś lepsza polska nazwa na tzw. actual arguments?) z argumentami formalnymi oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania.
+\begin{algorithm}
+    \algsize
+    \underline{function typeNodes} $(nodesWorklist, messageSendsWorklist)$:\\
+    \While{!nodesWorklist.empty?}{
+        \While{!nodesWorklist.empty?}{
+            \While{!nodesWorklist.empty?}{
+                processNode(nodesWorklist.pop())
+            }
+            
+            \For{$messageSend \in messageSendWorklist$}{
+                \If{satisfiedMessageSend?(messageSend)}{
+                    processMessageSend(messageSend)
+                }
+            }
+        }
+        
+        \For{$messageSend \in messageSendWorklist$}{
+            processMessageSend(messageSend)
+        }
+    }
+    \caption{Pseudokod funkcji typującej}
+    \label{alg:typeNodes}
+\end{algorithm}
+
+\begin{algorithm}
+    \algsize
+    \underline{function processNode} $(node)$:\\
+    nodeCounter[node]++\\
+    \If{$nodeCounter[node] < 100$}{
+        currentType = types[node]\\
+        types[node] = computeType(node, graph.incomingVertices(node))\\
+        \If{$currentType \neq types[node]$}{
+            \For{$targetNode \in graph.adjacentVertices(node)$}{
+                nodesWorklist.push(targetNode)
+            }
+        }
+    }
+    \caption{Pseudokod funkcji typującej pojedyńczy wierzchołek}
+    \label{alg:processNode}
+\end{algorithm}
+
+Schemat we wszystkich jest podobny i polega na znalezieniu w bazie definicji metody, która została wywołana, a następnie połączeniu wierzchołków argumentów wywołania z argumentami formalnymi oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania.
 Dzięki temu że wszystkie argumenty są zdefiniowane, możemy tutaj przeprowadzić kilka dodatkowych heurystyk.
 Są obecne specjalne mechanizmy pilnujące, że daną definicję metody przypiszemy do danego wywołania tylko raz (bo wywołania mogą być przetwarzane więcej niż raz).
 Następnie, jeśli w efekcie przetwarzania metod zostały dodane jakieś wierzchołki do kolejki, to wracamy do etapu przetwarzania wierzchołków.
 Jeżeli żadne nie zostały dodane, to przetwarzamy znowu wywołania metod, tym razem obsługując wywołanie nawet wtedy, jeśli któryś z argumentów nie jest zdefiniowany.
 
-\subsection{Heurystyki obsługi wywołań}
 
-Na początku sprawdzamy czy wywołanie nie pasuje do jednej z heurystyk opisanych poniżej. W przeciwnym przypadku zakładamy że to jest zwykłe wywołanie, które w szczególe zostanie omówione w następnej sekcji.
+\section{Heurystyki obsługi wywołań}
 
-Po pierwsze, wywołanie może wyglądać jak wywołanie konstruktora, tj. jest wywoływana metoda \texttt{new} na typie reprezentującym klasę. Ten przypadek jest prawie taki sam jak obsłużenie zwykłego wywołania metody z tą różnicą, że zamiast zwrócić wynik konstruktora, zwracamy typ instancji zamiast typu klasowego na którym konstruktor był wywołany, tj. jeżeli konstruktor był wywołany na wierzchołku typu \texttt{ClassType(Foo)} to zwracamy typ \texttt{NominalType(Foo)}.
+Na początku sprawdzamy czy wywołanie nie pasuje do jednej z heurystyk opisanych poniżej (Alg. \ref{alg:processMessageSend}). W przeciwnym przypadku zakładamy że to jest zwykłe wywołanie, które w szczególe zostanie omówione w następnej sekcji.
 
-Drugim przypadkiem jest kiedy obiekt na którym wywołujemy metodę jest typu \texttt{ProcType}, a nazwa metody to \texttt{call}. Oznacza to wywołanie funkcji anonimowej. W \texttt{ProcType} trzymamy identyfikator funkcji anonimowej, wystarczy go więc tylko pobrać i wyciągnąć z bazy definicję funkcji -- reszta procedury jest taka jak w przypadku zwykłego wywołania metody.
+\begin{algorithm}
+    \algsize
+    \underline{function processMessageSend} $(messageSend)$:\\
+    \For{$possibleType \in types[messageSend.sendObj].possibleTypes$}{
+        \If{messageAlreadyHandledByType?(messageSend, possibleType)}{
+            \texttt{next}
+        }
+        messageName = messageSend.name\;
+        \uIf{possibleType.is?(ClassType) \texttt{and} messageName = 'new'}{
+            handleConstructorSend(possibleType.name, messageSend)\;
+        }
+        \uElseIf{possibleType.is?(ProcType) \texttt{and} messageName = 'call'}{
+            handleProcCall(possibleType, messageSend)\;
+        }
+        \uElseIf{possibleType.is?(ClassType)}{
+            handleClassSend(possibleType.name, messageSend)\;
+        }
+        \Else{
+            handleInstanceSend(possibleType.name, messageSend)\;
+        }
+        markMessageSendAsHandled(messageSend, possibleType)
+    }
+    \caption{Pseudokod funkcji przetwarzającej wywołanie metody}
+    \label{alg:processMessageSend}
+\end{algorithm}
 
-Trzeci przypadek to metoda klasowa. Uznajemy wywołanie za wywołanie metody klasowej, jeśli obiekt na którym wywołujemy metodę jest pewnego typu klasowego, tj. \texttt{ClassType}. W tym przypadku jedyną różnicą od zwykłego wywołania jest zapytanie do bazy danych, które szuka metod zdefiniowanych na eigenclass, a nie w definicji klasy.
+Po pierwsze, wywołanie może wyglądać jak wywołanie konstruktora, tj. jest wywoływana metoda \texttt{new} na typie reprezentującym klasę (Alg. \ref{alg:handleConstructorSend}). Ten przypadek jest prawie taki sam jak obsłużenie zwykłego wywołania metody z tą różnicą, że zamiast zwrócić wynik konstruktora, dodajemy do grafu specjalny wierzchołek rodzaju \texttt{constructor} i podajemy mu nazwę inicjalizowanej klasy jako parametr (Alg. \ref{alg:connectConstructorToCallResult}). Dodajemy potem krawędź między tym wierzchołkiem, a wierzchołkiem wyniku metody. Obsługa tego specjalnego wierzchołka to pobranie parametru i zwrócenie go jako \texttt{GenericType} (jeśli nazwa klasy jest klasą generyczną \texttt{Array} lub \texttt{Hash}) lub \texttt{NominalType} (Alg. \ref{alg:computeType-constructor}). Dzięki temu, zwracamy (jako wynik wywołania konstruktora) typ instancji zamiast typu klasowego na którym konstruktor był wywołany, tj. jeżeli konstruktor był wywołany na wierzchołku typu \texttt{ClassType(Foo)} to zwracamy typ \texttt{NominalType(Foo)}.
 
-Tak jak zostało wspomniane wyżej, jeżeli żaden z tych przypadków nie zachodzi, uznajemy wywołanie za klasyczne wywołanie metody na instancji pewnego obiektu. Szukamy w takim wypadku metody o odpowiadającej do wywołania nazwie, która została zdefiniowana w klasie obiektu na którym metoda jest wywoływana.
+\begin{algorithm}
+    \algsize
+    \underline{function handleConstructorSend} $(className, messageSend)$:\\
+    constructorMethod = database.findInstanceMethodFromClassName(className, 'initialize')\;
+    \eIf{constructorMethod}{
+        connectConstructorToCallResult(className, messageSend.resultNode)\;
+    }{
+        handleRegularMessageSend(constructorMethod, messageSend)\;
+        connectConstructorToCallResult(className, messageSend.resultNode)\;
+    }
+    \caption{Pseudokod funkcji obsługującej wywołanie konstruktora}
+    \label{alg:handleConstructorSend}
+\end{algorithm}
 
-\subsection{Obsługa wywołania}
+\begin{algorithm}
+    \algsize
+    \underline{function connectConstructorToCallResult} $(className, resultNode)$:\\
+    constructorNode = Node('constructor', name: className)\;
+    graph.addEdge(constructorNode, resultNode)\;
+    nodesWorklist.push(constructorNode)\;
+    \caption{Pseudokod funkcji dołączającej specjalny wierzchołek konstruktora}
+    \label{alg:connectConstructorToCallResult}
+\end{algorithm}
+
+\begin{algorithm}
+    \algsize
+    \underline{function computeType} $(node, adjacentNodes)$:\\
+    \ldots\\
+    \If{node.kind = 'constructor'}{
+        \lIf{node.params.name = 'Array'}{return GenericType('Array')}
+        \lElseIf{node.params.name = 'Hash'}{return GenericType('Hash')}
+        \lElse{return NominalType(node.params.name)}
+    }
+    \ldots
+    \caption{Fragment funkcji typującej obsługującej konstruktor}
+    \label{alg:computeType-constructor}
+\end{algorithm}
+
+Drugim przypadkiem jest kiedy obiekt na którym wywołujemy metodę jest typu \texttt{ProcType}, a nazwa metody to \texttt{call}. Oznacza to wywołanie funkcji anonimowej. W \texttt{ProcType} trzymamy identyfikator funkcji anonimowej, wystarczy go więc tylko pobrać i wyciągnąć z bazy definicję funkcji (Alg. \ref{alg:handleProcCall}). Reszta procedury jest taka jak w przypadku zwykłego wywołania metody.
+
+\begin{algorithm}
+    \algsize
+    \underline{function handleProcCall} $(lambdaType, messageSend)$:\\
+    foundLambda = database.getLambda(lambdaType.lambdaId)\;
+    connectActualArgsToFormalArgs(messageSend.args, foundLambda.args)\;
+    graph.addEdge(foundLambda.resultNode, messageSend.resultNode)\;
+    nodesWorklist.push(messageSend.resultNode)\;
+    \caption{Pseudokod funkcji obsługującej wywołanie funkcji anonimowej}
+    \label{alg:handleProcCall}
+\end{algorithm}
+
+Trzeci przypadek to metoda klasowa (Alg. \ref{alg:handleClassSend}). Uznajemy wywołanie za wywołanie metody klasowej, jeśli obiekt na którym wywołujemy metodę jest pewnego typu klasowego, tj. \texttt{ClassType}. W tym przypadku jedyną różnicą od zwykłego wywołania jest zapytanie do bazy danych, które szuka metod zdefiniowanych na eigenclass, a nie w definicji klasy.
+
+\begin{algorithm}
+    \algsize
+    \underline{function handleClassSend} $(className, messageSend)$:\\
+    foundMethod = database.findClassMethodFromClassName(className, messageSend.name)\;
+    \If{foundMethod}{
+        handleRegularMessageSend(foundMethod, messageSend)\;
+        connectMethodResultToResultNode(foundMethod.nodes, messageSend.resultNode)\;
+    }
+    \caption{Pseudokod funkcji obsługującej wywołanie metody klasowej}
+    \label{alg:handleClassSend}
+\end{algorithm}
+
+Tak jak zostało wspomniane wyżej, jeżeli żaden z tych przypadków nie zachodzi, uznajemy wywołanie za klasyczne wywołanie metody na instancji pewnego obiektu (Alg. \ref{alg:handleInstanceSend}). Szukamy w takim wypadku metody o odpowiadającej do wywołania nazwie, która została zdefiniowana w klasie obiektu na którym metoda jest wywoływana.
+
+\begin{algorithm}
+    \algsize
+    \underline{function handleInstanceSend} $(className, messageSend)$:\\
+    foundMethod = database.findInstanceMethodFromClassName(className, messageSend.name)\;
+    \If{foundMethod}{
+        handleRegularMessageSend(foundMethod, messageSend)\;
+        connectMethodResultToResultNode(foundMethod.nodes, messageSend.resultNode)\;
+    }
+    \caption{Pseudokod funkcji obsługującej wywołanie metody instancji}
+    \label{alg:handleInstanceSend}
+\end{algorithm}
+
+\section{Obsługa wywołania}
 
 Po powyższych heurystykach możemy założyć, że mamy już znalezioną definicję metody, do której chcemy podłączyć wywołanie. Definicja, niezależnie od tego czy była to klasyczna definicja metody czy definicja funkcji anonimowej, ma obowiązkowo kilka właściwości: drzewo argumentów formalnych, wierzchołek wyniku definicji, listę użyć bezargumentowego super, listę użyć słowa kluczowego \texttt{yield} (tj. wywołań bloków) oraz być może wierzchołek wywoływacza (wierzchołek wywoływacza jest specjalnym mechanizmem, opisanym dokładniej w sekcji poświęconej wywołaniom polimorficznym).
 
 Najpierw następuje dodanie krawędzi między wierzchołkiem obiektu, na którym jest wywoływana metoda, oraz specjalnego wierzchołka rodzaju \texttt{caller} dla tej definicji metody, o ile on istnieje.
 
+\begin{algorithm}
+    \algsize
+    \underline{function handleRegularMessageSend} $(foundMethod, messageSend)$:\\
+    nodes = foundMethod.nodes\;
+    \If{nodes.caller}{
+        graph.addEdge(messageSend.sendObj, nodes.caller)\;
+        nodesWorklist.push(nodes.caller)\;
+    }
+    connectActualArgsToFormalArgs(messageSend.args, foundMethod.args)\;
+
+    \For{$zsuperCall \in nodes.zsupers$}{
+        superMethod = database.findSuperMethod(foundMethod.id)\;
+        \lIf{not superMethod}{next}
+        
+        connectActualArgsToFormalArgs(messageSend.args, superMethod.args)\;
+        \If{zsuperCall.block}{
+            connectYieldsToBlock(superMethod.nodes.yields, zsuperCall.block)\;
+        }{
+            connectYieldsToBlock(superMethod.nodes.yields, messageSend.block)\;
+        }
+        connectMethodResultToResultNode(superMethod, zsuperCall.resultNode)\;
+    }
+    connectYieldsToBlock(foundMethod.nodes.yields, messageSend.block)\;
+    \caption{Pseudokod funkcji obsługującej łączenie wierzchołków metody z wierzchołkami wywołania}
+    \label{alg:handleRegularMessageSend}
+\end{algorithm}
+
 Najważniejsza część to wspomniane już połączenie wierzchołków argumentów wywołania z wierzchołkami argumentów formalnych, oraz wierzchołka wyniku metody z wierzchołkiem wyniku wywołania. Są dwa powody, które utrudniają zrobienie poprawnego dopasowania argumentów wywołania i argumentów formalnych.
 
-Pierwszym jest tzw. \textit{splat argument}. Zarówno w argumentach wywołania jak i argumentach formalnych, możemy użyć składni \textit{splat}, która w przypadku argumentów wywołania spłaszcza przekazaną listę jako listę argumentów, a w przypadku argumentów formalnych buduje tablicę z przekazanych argumentów. Jest to mechanizm znany z wielu języków pozwalający na definiowanie i wywoływanie funkcji o zmiennej liczbie argumentów. 
+Pierwszym jest tzw. \textit{splat argument}. Zarówno w argumentach wywołania (Rys. \ref{fig:actual-splat}) jak i argumentach formalnych (Rys. \ref{fig:formal-splat}), możemy użyć składni \emph{splat}, która w przypadku argumentów wywołania spłaszcza przekazaną listę jako listę argumentów, a w przypadku argumentów formalnych buduje tablicę z przekazanych argumentów. Jest to mechanizm znany z wielu języków pozwalający na definiowanie i wywoływanie funkcji o zmiennej liczbie argumentów.
 
-Drugi to \textit{named arguments} czyli argumenty, które w wywołaniu muszą być przekazane razem z nazwą argumentu formalnego, ale dzięki temu mogą być przekazane w dowolnej kolejności. Niestety, jest to tylko pewna sztuczka głównie po stronie parsera. Mechanizm \textit{named arguments} w Ruby polega na tym, że jeżeli ostatni przekazywany argument jest słownikiem, to jest traktowany jako słownik zawierający przekazywane \textit{named arguments}. Z tego powodu, przekazywane argumenty wcale nie muszą być przekazywane explicit, ale mogą być przekazane np. przez zwykłą zmienną, która jest słownikiem. Dlatego też aby poprawnie dopasować przekazane \textit{named arguments} do tych w definicji wywołania, musielibyśmy śledzić dokładne mapowanie typów w każdym słowniku.
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{imgs/splat.png}
+	\caption{Trudność w dopasowaniu argumentów gdy splat argument użyty w argumentach wywołania. 	\texttt{some\_list} jest listą argumentów o nieznanej długości.}
+	\label{fig:actual-splat}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{imgs/formal-splat.png}
+	\caption{Trudność w dopasowaniu argumentów gdy splat argument użyty w argumentach formalnych. 	\texttt{some\_list} jest listą argumentów o dowolnej długości.}
+	\label{fig:formal-splat}
+\end{figure}
+
+Drugi to \textit{named arguments} czyli argumenty, które w wywołaniu muszą być przekazane razem z nazwą argumentu formalnego, ale dzięki temu mogą być przekazane w dowolnej kolejności. Niestety, jest to tylko pewna sztuczka głównie po stronie parsera. Mechanizm \textit{named arguments} w Ruby polega na tym, że jeżeli ostatni przekazywany argument jest słownikiem, to jest traktowany jako słownik zawierający przekazywane \textit{named arguments}. Z tego powodu, przekazywane argumenty wcale nie muszą być przekazywane explicit, ale mogą być przekazane np. przez zwykłą zmienną, która jest słownikiem (Rys. \ref{fig:named-args}). Dlatego też aby poprawnie dopasować przekazane \textit{named arguments} do tych w definicji wywołania, musielibyśmy śledzić dokładne mapowanie typów w każdym słowniku.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{imgs/named-args.png}
+	\caption{Trudność w dopasowaniu argumentów gdy \emph{named arguments} pobrane z nieznanego słownika.}
+	\label{fig:named-args}
+\end{figure}
 
 Trzecim etapem jest połączenie przekazanych argumentów do metody z klasy nadrzędnej oraz wyników tej metody z wszystkimi wywołaniami bezargumentowego \texttt{super}.
 
-Kolejnym krokiem jest obsługa bloku. Blok mamy przypisany do wywołania, z reguły w postaci albo w postaci wierzchołka z identyfikatorem funkcji anonimowej (tj. przekazany blok był znany już przy budowaniu grafu), albo wierzchołka grafu, który został otypowany na \texttt{ProcType} i zawiera w sobie identyfikator funkcji anonimowej. Następuje więc przejście po wszystkich użyciach słowa kluczowego \texttt{yield} w tej metodzie i połączeniu przekazanych do \texttt{yield} argumentów z argumentami formalnymi znalezionej funkcji anonimowej oraz wierzchołka wyniku funkcji anonimowej z wierzchołkiem wyniky \texttt{yield}. Jest to procedura identyczna do opisanego wyżej łączenia argumentów wywołania z argumentami formalnymi.
+Kolejnym krokiem jest obsługa bloku (Alg. \ref{alg:blocks}). Blok mamy przypisany do wywołania, z reguły w postaci albo w postaci wierzchołka z identyfikatorem funkcji anonimowej (tj. przekazany blok był znany już przy budowaniu grafu), albo wierzchołka grafu, który został otypowany na \texttt{ProcType} i zawiera w sobie identyfikator funkcji anonimowej. Następuje więc przejście po wszystkich użyciach słowa kluczowego \texttt{yield} w tej metodzie i połączeniu przekazanych do \texttt{yield} argumentów z argumentami formalnymi znalezionej funkcji anonimowej oraz wierzchołka wyniku funkcji anonimowej z wierzchołkiem wyniky \texttt{yield}. Jest to procedura identyczna do opisanego wyżej łączenia argumentów wywołania z argumentami formalnymi.
+
+\begin{algorithm}
+    \algsize
+    \underline{function connectYieldsToBlock} $(yieldNodes, blockNode)$:\\
+    \For{$yieldNode \in yieldNodes$}{
+        lambdaIds = lambdaIdsOfBlock(blockNode)\;
+        \For{$lambdaId \in lambdaIdsOfBlock(blockNode)$}{
+            blockLambda = database.getLambda(lambdaId)\;
+            connectActualArgsToFormalArgs(yieldNode.args, blockLambda.args)\;
+            graph.addEdge(blockLambda.resultNode, yieldNode.resultNode)\;
+            nodesWorklist.push(yieldNode.resultNode)\;
+        }
+    }
+    \caption{Pseudokod obsługi bloku podczas wywołania}
+    \label{alg:blocks}
+\end{algorithm}
+
 
 Na końcu, następuje połączenie wierzchołka wyniku metody oraz wierzchołka wyniku wywołania.
 
 
-\subsection{Wywołania funkcji polimorficznych}
+\section{Wywołania funkcji polimorficznych}
 
 Jak już zostało wspomniane, definicja metody w Bazie ma w sobie kilka wierzchołków, które są istotne z punktu widzenia analizy, takie jak wierzchołek wyniku metody, wierzchołki argumentów i inne związane z blokami i wywołaniami bezargumentowego \texttt{super}. Te wierzchołki mogą zostać przechowywane na dwa sposoby. Pierwszy z nich to po prostu dokładnie te wierzchołki, które są obecne w grafie. Drugi sposób to przechowywanie szkicu podgrafu (tj. wierzchołki i krawędzie, które nie należą do grafu -- są tylko wzorem), z którego przy okazji przetwarzania każdego wywołania są tworzone świeże wierzchołki.
 
 Świeże wierzchołki dla każdego wywołania oznaczają też, że możemy skorzystać z typu wyrażenia na którym metoda została wywołana. Dlatego też, jeżeli obsługujemy wywołanie metody której definicja korzysta z podgrafu, łączymy wierzchołek wyrażenia na którym została wywołana metoda z wierzchołkiem rodzaju \texttt{caller}. Dzięki temu możemy bez problemu zbudować podgrafy działające poprawnie dla takich metod polimorficznych jak \texttt{map} z \texttt{Array} lub po prostu funkcje, które zwracają obiekt na którym zostały wywołane (nie było to możliwe bez podgrafu), takie jak np. \texttt{freeze}.
 
-\subsection{Inne wierzchołki specjalne}
+\section{Inne wierzchołki specjalne}
 
 Podejście z podgrafami pozwala też na obsługę niektórych metod w specjalny sposób, bez dużej ingerencji w funkcję typującą. Przykładem takiej metody jest metoda \texttt{class}, którą możemy wywołać na dowolnym obiekcie, a która zwraca klasę tego obiektu. Dzięki podgrafowi, definicja takiej metody to tylko dwie krawędzie, widoczne na rysunku. Specjalny wierzchołek \texttt{extract\_class} na podstawie typu wierzchołka z krawędzi wejściowej zwraca odpowiedni typ, który zwróciłaby metoda \texttt{class}. Na przykład, jeżeli typ wejściowy to \texttt{NominalType(Foo)}, to typem wyjściowym będzie \texttt{ClassType(Foo)}.
+
+\section{Pozostałe wierzchołki}
+
+Pozostałe wierzchołki są obsługiwane w bardzo prosty sposób. Część z nich zwraca ustalony typ, np. typ \texttt{NominalType('String')} dla wierzchołka rodzaju \texttt{str}. Inne, robią prostą operację na jednym z wejściowych typów, jak opakowanie wejściowych typów w typ generyczny tablicy. Pozostałe, po prostu biorą wszystkie wejściowe wierzchołki i tworzą zbiorczy typ \texttt{UnionType} z typów wierzchołków wejściowych.
+
+
+\chapter{Podsumowanie}
+
+Głównym celem niniejszej pracy było podjęcie próby zaimplementowania wtyczki wspomagającej pracę programisty Ruby. Opracowany projekt spełnia ten cel przez dostarczenie funkcjonalności skoku do definicji i autouzupełniania, a autor tej pracy korzysta z tego projektu w codziennej pracy.
+
+Pomimo dynamicznej natury języka Ruby udało się stworzyć narzędzie, które z zadowalającym efektem potrafi wywnioskować przybliżony typ wyrażeń, korzystając z grafu przepływu danych i heurystyk. Posiadanie tej informacji pozwoliłoby również zaimplementować szereg innych dodatkowych funkcjonalności obecnych w komercyjnych rozwiązaniach.
+
+Największą wadą obecnego projektu jest konieczność uruchomienia od nowa funkcji typującej w przypadku zmiany kodu źródłowego. Ponieważ w praktyce programista spędza znacznie więcej czasu czytając kod, niż go pisząc, nie jest to wada czyniąca wtyczkę bezwartościową, ale utrudnia ona implementowanie niektórych funkcjonalności. Jednocześnie stworzenie takiego inkrementalnego algorytmu typującego byłoby zdecydowanie najciekawszym kierunkiem rozwoju tego projektu.
+
+Drugą wadą projektu jest efektywność -- cały projekt, jako projekt badawczy, został napisany w Ruby, czyli języku o wysokiej ekspresji, ale jednak języku interpretowanym i ze słabym wsparciem wielowątkowości. Oznaczało to, że przy bardzo dużych projektach indeksowanie potrafiło zająć kilkanaście minut. Projekt jest głównie ograniczony przez CPU, więc przepisanie go do dowolnego języka kompilowanego powinno dać znaczny skok wydajności.
+
+Przez to, że projekt opiera się na heurystykach, jest wiele możliwości jego rozwoju, które pozwalałyby jeszcze dokładniej określać typ wyrażeń. Ponadto, sam system typów mógłby zostać rozbudowany, na przykład wprowadzając specjalne typy listy i tupli, zależnie od rodzaju inicjalizacji tablicy, podobnie jak to robi RDL \cite{RDL}. Jeszcze innym, bardziej inżynieryjnym kierunkiem byłaby integracja z niektórymi dotychczasowymi narzędziami popularnymi w społeczności języka Ruby, takimi jak system dokumentacji YARD \cite{YARD}. Integracja z systemami dokumentacji (które często posiadają jakiś język opisu typów) pozwoliłoby również na szczątkową implementację silnego typowania, informującą programistę kiedy wywołanie funkcji jest używane z argumentami niepoprawnego typu.
+
+
+\printbibliography
+
 
 
 %\section{Future work}
 
 %\subsection{More metaprogramming intelligence}
 %\subsection{Bundler, gems and libraries}
-%\subsection{YARD}
-%\subsection{Rust implementation}
 %\subsection{Caching}
 %\subsection{Tracking effects, ex. exceptions}
 %\subsection{Tracepoint}
