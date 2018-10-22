@@ -671,7 +671,14 @@ Jak już zostało wspomniane, definicja metody w Bazie ma w sobie kilka wierzcho
 
 \section{Inne wierzchołki specjalne}
 
-Podejście z podgrafami pozwala też na obsługę niektórych metod w specjalny sposób, bez dużej ingerencji w funkcję typującą. Przykładem takiej metody jest metoda \texttt{class}, którą możemy wywołać na dowolnym obiekcie, a która zwraca klasę tego obiektu. Dzięki podgrafowi, definicja takiej metody to tylko dwie krawędzie, widoczne na rysunku. Specjalny wierzchołek \texttt{extract\_class} na podstawie typu wierzchołka z krawędzi wejściowej zwraca odpowiedni typ, który zwróciłaby metoda \texttt{class}. Na przykład, jeżeli typ wejściowy to \texttt{NominalType(Foo)}, to typem wyjściowym będzie \texttt{ClassType(Foo)}.
+Podejście z podgrafami pozwala też na obsługę niektórych metod w specjalny sposób, bez dużej ingerencji w funkcję typującą. Przykładem takiej metody jest metoda \texttt{class}, którą możemy wywołać na dowolnym obiekcie, a która zwraca klasę tego obiektu. Dzięki podgrafowi, definicja takiej metody to tylko dwie krawędzie, widoczne na rysunku \ref{fig:extract-class}. Specjalny wierzchołek \texttt{extract\_class} na podstawie typu wierzchołka z krawędzi wejściowej zwraca odpowiedni typ, który zwróciłaby metoda \texttt{class}. Na przykład, jeżeli typ wejściowy to \texttt{NominalType(Foo)}, to typem wyjściowym będzie \texttt{ClassType(Foo)}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[scale=0.4]{imgs/extract-class.png}
+    \caption{Wykorzystanie mechanizmu subgrafów na przykładzie metody \texttt{class}.}
+    \label{fig:extract-class}
+\end{figure}
 
 \section{Pozostałe wierzchołki}
 
