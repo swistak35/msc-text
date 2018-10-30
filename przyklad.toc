@@ -41,7 +41,7 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.2.2.}Indeksowanie}{12}{subsection.2.2.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {3.}Budowanie grafu}{15}{chapter.3}
+\contentsline {chapter}{\numberline {3.}Budowanie grafu przep\IeC {\l }ywu danych}{15}{chapter.3}
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.1.}Wst\IeC {\k e}p}{15}{section.3.1}
 \defcounter {refsection}{0}\relax 
@@ -53,7 +53,7 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.5.}Zmienne globalne}{17}{section.3.5}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3.6.}Klasy i modu\IeC {\l }y}{18}{section.3.6}
+\contentsline {section}{\numberline {3.6.}Klasy i modu\IeC {\l }y}{17}{section.3.6}
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.7.}Inne sta\IeC {\l }e}{18}{section.3.7}
 \defcounter {refsection}{0}\relax 
@@ -61,7 +61,7 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.9.}Zmienne lokalne}{19}{section.3.9}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3.10.}Dziedziczenie}{19}{section.3.10}
+\contentsline {section}{\numberline {3.10.}Dziedziczenie}{20}{section.3.10}
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.11.}Zmienne instancji}{20}{section.3.11}
 \defcounter {refsection}{0}\relax 
@@ -69,9 +69,9 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.13.}attr\_reader, attr\_writer}{21}{section.3.13}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3.14.}Widzialno\IeC {\'s}\IeC {\'c} metod}{21}{section.3.14}
+\contentsline {section}{\numberline {3.14.}Widzialno\IeC {\'s}\IeC {\'c} metod}{22}{section.3.14}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3.15.}Wywo\IeC {\l }ania metod}{23}{section.3.15}
+\contentsline {section}{\numberline {3.15.}Wywo\IeC {\l }ania metod}{22}{section.3.15}
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.16.}Wywo\IeC {\l }ania super}{23}{section.3.16}
 \defcounter {refsection}{0}\relax 
@@ -85,7 +85,7 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.21.}P\IeC {\k e}tle}{25}{section.3.21}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3.22.}Return}{25}{section.3.22}
+\contentsline {section}{\numberline {3.22.}Return}{26}{section.3.22}
 \defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {4.}Wnioskowanie typu}{27}{chapter.4}
 \defcounter {refsection}{0}\relax 
