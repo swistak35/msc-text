@@ -266,7 +266,7 @@ Ruby wspiera wiele rodzajów dziedziczenia, ale poszczególne konstrukty nie są
 
 \section{Zmienne instancji}
 
-Skoro Ruby jest językiem obiektowym, nie może zabraknąć zmiennych instancji. Traktujemy je w podobny sposób jak zmienne globalne - nie próbujemy śledzić dokładnego przepływu, tylko zbieramy wszystkie możliwe przypisania zmiennych instancji, wszystkie możliwe użycia, i je łączymy ze sobą przez wierzchołek pośredni \texttt{ivar\_definition}. Aktualnie ignorujemy fakt, że zmienna \texttt{@x} w klasie \texttt{Foo} i \texttt{Bar} jest tą samą zmienną, jeśli \texttt{Bar} jest rodzicem \texttt{Foo}, ale łatwo rozszerzyć kod o tę funkcjonalność.
+Skoro Ruby jest językiem obiektowym, nie może zabraknąć zmiennych instancji. Traktujemy je w podobny sposób jak zmienne globalne -- nie próbujemy śledzić dokładnego przepływu, tylko zbieramy wszystkie możliwe przypisania zmiennych instancji, wszystkie możliwe użycia, i je łączymy ze sobą przez wierzchołek pośredni \texttt{ivar\_definition}. Aktualnie ignorujemy fakt, że zmienna \texttt{@x} w klasie \texttt{Foo} i \texttt{Bar} jest tą samą zmienną, jeśli \texttt{Bar} jest rodzicem \texttt{Foo}, ale łatwo rozszerzyć kod o tę funkcjonalność.
 
 \section{Eigenclass}
 
@@ -323,7 +323,7 @@ Tutaj funkcja budująca ucieka się do heurystyki wykrywającej użycie funkcji
 
 \section{Widzialność metod}
 
-W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to - posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy mogą prawdopodobnie pojawić się w produkcyjnych programach -- autor tej pracy natknął się na taki przypadek osobiście. Jednak z braku lepszego rozwiązania, stosujemy tutaj również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
+W większości języków obiektowych, \texttt{private}, \texttt{public} i \texttt{protected} są słowami kluczowymi (a przez to -- posiadają własne AST), w Ruby jednakże są to zwykłe wywołania metod klasowych. Z tego powodu, znowu korzystamy z heurystyk. W tym wypadku jednak takie heurystyki są mniej akceptowalne, ponieważ te nazwy mogą prawdopodobnie pojawić się w produkcyjnych programach -- autor tej pracy natknął się na taki przypadek osobiście. Jednak z braku lepszego rozwiązania, stosujemy tutaj również tylko prostą heurystykę po nazwie metody. W tym wypadku, analizujemy argumenty jakie otrzymuje wywołanie metody \texttt{private} i wysyłamy do bazy żądanie zmiany widzialności metod o podanych jako argumenty nazwach, w definicji klasy którą aktualnie przetwarzamy (informację o aktualnie przetwarzanej definicji klasy trzymamy w kontekście).
 
 
 \begin{algorithm}
@@ -402,7 +402,7 @@ Ruby posiada znane z innych języków programowania słowo kluczowe \texttt{retu
 Mamy następujące typy:
 
 \begin{itemize}
- \item \texttt{Bottom} - typ oznaczający brak typu, używany kiedy typ wierzchołka jest jeszcze nie znany lub typu nie posiada (np. słowa kluczowe \texttt{raise} lub \texttt{break})
+ \item \texttt{Bottom} -- typ oznaczający brak typu, używany kiedy typ wierzchołka jest jeszcze nie znany lub typu nie posiada (np. słowa kluczowe \texttt{raise} lub \texttt{break})
  \item \texttt{NominalType(Foo)} -- podstawowy typ, oznacza że wyrażenie jest instancją klasy Foo.
  \item \texttt{ClassType(Foo)} -- typ oznaczający że wyrażenie jest klasą \texttt{Foo}. Innymi słowy, jest instancją klasy \texttt{Class} lub instancją \textit{eigenclass} klasy \texttt{Foo}, ale tak dokładna informacja jest oczywiście przydatniejsza niż samo \texttt{NominalType(Class)}, dlatego mamy oddzielny typ na ten specjalny przypadek.
  \item \texttt{GenericType(Foo)<typ1, typ2, ...>} -- typ oznaczający jeden z typów generycznych. Opisane w pracy są dwa: \texttt{Array} posiadający jeden parametr, oraz \texttt{Hash} posiadający dwa parametry (typ kluczy i typ wartości). Parametry są typami. Można sobie łatwo wyobrazić rozszerzenie na inne klasy z biblioteki standardowej, takie jak \texttt{Set} lub \texttt{Range}.
