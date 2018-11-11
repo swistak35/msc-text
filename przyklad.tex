@@ -179,9 +179,9 @@ Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowani
 \section{Wstęp}
 
 
-Graf ten budujemy po sparsowaniu pliku zródłowego do AST i będziemy go używać do wyprowadzenia typów funkcji.
-
-Graf DFG jest skierowany i może zawierać cykle. Wierzchołki są etykietowane, tj. każdy wierzchołek ma swój ``rodzaj'' oraz być może dodatkowe parametry (zależnie od rodzaju). Ponadto wierzchołek może mieć przypisaną lokalizację w kodzie źródłowym. Lokalizacja składa się ze ścieżki do pliku, pozycji początkowej w kodzie źródłowym (numer linii i numer kolumny) oraz pozycji końcowej w kodzie źródłowym. Krawędzie są nieetykietowane.
+Graf DFG budujemy po sparsowaniu pliku zródłowego do AST i będziemy go używać do ustalenia typów wszystkich wyrażeń.
+Podczas budowania grafu jednocześnie zbieramy informacje o definicjach klas, modułów i metod.
+Graf ten jest skierowany i może zawierać cykle. Wierzchołki są etykietowane, tj. każdy wierzchołek ma swój ``rodzaj'' oraz być może dodatkowe parametry (zależnie od rodzaju). Ponadto wierzchołek może mieć przypisaną lokalizację w kodzie źródłowym. Lokalizacja składa się ze ścieżki do pliku, pozycji początkowej w kodzie źródłowym (numer linii i numer kolumny) oraz pozycji końcowej w kodzie źródłowym. Krawędzie są nieetykietowane.
 
 \section{Literały}
 
