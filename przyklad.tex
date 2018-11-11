@@ -8,6 +8,15 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 
+\usepackage[toc,page]{appendix}
+
+% shell commands listings
+\usepackage{listings}
+\lstset{
+    basicstyle=\footnotesize
+}
+
+
 \usepackage{amsmath}
 \usepackage[linesnumbered,ruled]{algorithm2e}
 %\algsetup{linenosize=\small}
@@ -449,14 +458,11 @@ Następnie, w zależności od obliczonego typu wyrażenia na którym jest wywoł
 \begin{algorithm}
     \algsize
     \underline{function processNode} $(\mathit{node})$:\\
-    nodeCounter[node]++\\
-    \If{$\mathit{nodeCounter[node]} < 100$}{
-        currentType = types[node]\\
-        types[node] = computeType(node, graph.incomingVertices(node))\\
-        \If{$\mathit{currentType} \neq \mathit{types[node]}$}{
-            \For{$\mathit{targetNode} \in \mathit{graph.adjacentVertices(node)}$}{
-                nodesWorklist.push(targetNode)
-            }
+    currentType = types[node]\\
+    types[node] = computeType(node, graph.incomingVertices(node))\\
+    \If{$\mathit{currentType} \neq \mathit{types[node]}$}{
+        \For{$\mathit{targetNode} \in \mathit{graph.adjacentVertices(node)}$}{
+            nodesWorklist.push(targetNode)
         }
     }
     \caption{Pseudokod funkcji typującej pojedynczy wierzchołek}
@@ -698,6 +704,107 @@ Największą wadą obecnego projektu jest konieczność uruchomienia od nowa fun
 Drugą wadą projektu jest efektywność -- cały projekt, jako projekt badawczy, został napisany w Ruby, czyli języku o wysokiej ekspresji, ale jednak języku interpretowanym i ze słabym wsparciem wielowątkowości. Oznaczało to, że przy bardzo dużych projektach indeksowanie potrafiło zająć kilkanaście minut. Projekt jest głównie ograniczony przez CPU, więc przepisanie go do dowolnego języka kompilowanego powinno dać znaczny skok wydajności.
 
 Przez to, że projekt opiera się na heurystykach, jest wiele możliwości jego rozwoju, które pozwalałyby jeszcze dokładniej określać typ wyrażeń. Ponadto, sam system typów mógłby zostać rozbudowany, na przykład wprowadzając specjalne typy listy i krotek, zależnie od rodzaju inicjalizacji tablicy, podobnie jak to robi RDL \cite{RDL}. Jeszcze innym, bardziej inżynieryjnym kierunkiem byłaby integracja z niektórymi dotychczasowymi narzędziami popularnymi w społeczności języka Ruby, takimi jak system dokumentacji YARD \cite{YARD}. Integracja z systemami dokumentacji (które często posiadają jakiś język opisu typów) pozwoliłoby również na szczątkową implementację silnego typowania, informującą programistę kiedy wywołanie funkcji jest używane z argumentami niepoprawnego typu.
+
+\begin{appendices}
+
+\chapter{Instalacja i uruchomienie}
+
+\section{Instalacja języka Ruby}
+
+Aby zainstalować język Ruby na systemie Linux najlepiej skorzystać z narzędzia \texttt{rbenv} wraz z dodatkiem \texttt{ruby-build}. \texttt{rbenv} służy do zarządzania zainstalowanymi interpreterami języka Ruby, a \texttt{ruby-build} do łatwego skompilowania dowolnej wersji interpretera ze źródeł.
+
+Aby zainstalować \texttt{rbenv} można skorzystać z instalatora automatycznego dostępnego pod adresem: \url{https://github.com/rbenv/rbenv-installer#rbenv-installer}, dodatek \texttt{ruby-build} zostanie zainstalowany automatycznie.
+
+Drugą opcją jest instalacja ręczna, dostępna pod adresem \url{https://github.com/rbenv/rbenv#basic-github-checkout}.
+
+Rekomendowaną wersją ruby do instalacji jest \texttt{2.5.1}, jednak projekt powinien działać dobrze na każdej wersji od 2.3 wzwyż:
+
+\begin{lstlisting}
+    $ rbenv install 2.5.1
+    $ rbenv global 2.5.1
+\end{lstlisting}
+
+Komenda \texttt{rbenv global} służy do ustawienia domyślnej wersji interpretera.
+
+\section{Pobranie projektu} \label{sec:download-project}
+
+Aby pobrać projekt wystarczy sklonować jego repozytorium GIT:
+
+\begin{lstlisting}
+    $ git clone git@github.com:swistak35/orbacle.git
+\end{lstlisting}
+
+\section{Instalacja projektu - wersja automatyczna}
+
+W internetowej bazie bibliotek języka Ruby jest dostępna jedna z wersji projektu. Można ją zainstalować korzystając z następującego polecenia:
+
+\begin{lstlisting}
+    $ gem install orbacle --version 0.2.0
+    $ rbenv rehash
+    $ orbaclerun --help
+    ...
+\end{lstlisting}
+
+\section{Instalacja projektu - wersja z repozytorium}
+
+Najpierw należy pobrać projekt z repozytorium, tak jak zostało to opisane w sekcji \ref{sec:download-project}.
+
+Następnie należy zainstalować bibliotekę \texttt{bundler} do zarządzania zależnościami w projektach:
+
+\begin{lstlisting}
+    $ gem install bundler --version 1.16.4
+    ...
+    $ rbenv rehash
+    $ bundler --version
+    Bundler version 1.16.4
+\end{lstlisting}
+
+Następnie należy wejść do katalogu projektu. W projekcie jest dostępne polecenie \texttt{make full}, które instaluje zależności, buduje paczkę i instaluje ją w systemie.
+
+\begin{lstlisting}
+    $ cd orbacle
+    $ make full
+    ...
+    $ rbenv rehash
+    $ orbaclerun --help
+    ...
+\end{lstlisting}
+
+\section{Konfiguracja w VIM}
+
+Jednym z edytorów w którym można użyć tego projektu jest \texttt{vim}. Dostępna jest gotowa konfiguracja której można użyć. Jest istotne, aby pobrać ją do katalogu \texttt{~/.vim-orbacle}.
+
+\begin{lstlisting}
+    $ git clone git@github.com:swistak35/msc-demo.git ~/.vim-orbacle
+\end{lstlisting}
+
+Następnie można uruchomić edytor VIM z konfiguracją z tego repozytorium. Projekt jest napisany w Ruby, więc może być przykładowym projektem na którym można przetestować działanie wtyczki.
+
+\begin{lstlisting}
+    $ cd sciezka_do_projektu
+    $ vim -u ~/.vim-orbacle/vimrc
+\end{lstlisting}
+
+Dostępne są następujące skróty klawiszowe:
+
+\begin{itemize}
+\item \texttt{J} -- skok do definicji (stałej, funkcji lub zmiennej)
+\item \texttt{T} -- informacja o typie zmiennej
+\item \texttt{Ctrl+X Ctrl+O} -- autouzupełnianie pełnej nazwy aktualnie pisanej nazwy funkcji
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+\end{appendices}
 
 
 \printbibliography
