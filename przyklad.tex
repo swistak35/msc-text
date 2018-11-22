@@ -739,7 +739,7 @@ Aby pobrać projekt wystarczy sklonować jego repozytorium GIT:
 W internetowej bazie bibliotek języka Ruby jest dostępna jedna z wersji projektu. Można ją zainstalować korzystając z następującego polecenia:
 
 \begin{lstlisting}
-    $ gem install orbacle --version 0.2.0
+    $ gem install orbacle --version 0.2.1
     $ rbenv rehash
     $ orbaclerun --help
     ...
@@ -768,31 +768,55 @@ Następnie należy wejść do katalogu projektu. W projekcie jest dostępne pole
     $ rbenv rehash
     $ orbaclerun --help
     ...
+
 \end{lstlisting}
 
-\section{Konfiguracja w VIM}
+\section{Konfiguracja}
 
-Jednym z edytorów w którym można użyć tego projektu jest \texttt{vim}. Dostępna jest gotowa konfiguracja której można użyć. Jest istotne, aby pobrać ją do katalogu \texttt{~/.vim-orbacle}.
+Projekt można skonfigurować z dowolnym edytorem który posiada wtyczkę do komunikacji z serwerem LSP przez standardowe wejście i wyjście.
+
+\subsection{Konfiguracja w VIM}
+
+W edytorze VIM jedną z takich wtyczek jest LanguageClient-neovim \cite{LSPCLIENT}. Gdy wtyczka jest zainstalowana, podstawowa konfiguracja to tylko jedna linijka w pliku konfiguracyjnym \texttt{.vimrc}:
+
+\begin{lstlisting}
+    let g:LanguageClient_serverCommands = {'ruby': ['orbaclerun', 'file-server']}
+\end{lstlisting}
+
+W miarę preferencji można też dodać wybrane skróty klawiszowe:
+
+\begin{lstlisting}
+    nnoremap J :call LanguageClient_textDocument_definition()<CR>
+    nnoremap T :call LanguageClient_textDocument_hover()<CR>
+\end{lstlisting}
+
+\subsection{Kompletne demo w VIM}
+
+Na potrzeby pracy została przygotowana gotowa konfiguracja do edytora VIM, której można użyć aby przetestować działanie projektu bez konieczności ręcznej konfiguracji edytora opisanej w poprzedniej sekcji. Jest istotne, aby pobrać ją do katalogu \texttt{~/.vim-orbacle}.
 
 \begin{lstlisting}
     $ git clone https://github.com/swistak35/msc-demo.git ~/.vim-orbacle
 \end{lstlisting}
 
-Następnie można uruchomić edytor VIM z konfiguracją z tego repozytorium. Projekt jest napisany w Ruby, więc może być przykładowym projektem na którym można przetestować działanie wtyczki.
+Projekt jest napisany w Ruby, więc może być przykładowym projektem na którym można przetestować działanie wtyczki. Można uruchomić edytor VIM z wspomnianą gotową konfiguracją za pomocą polecenia:
 
 \begin{lstlisting}
     $ cd sciezka_do_projektu
     $ vim -u ~/.vim-orbacle/vimrc
 \end{lstlisting}
 
+Następnie warto otworzyć jakiś plik z projektu (np. \texttt{lib/orbacle/builder.rb}), przejść do miejsca w którym jest jakaś definicja oraz wcisnąć kombinację klawiszy \texttt{Shift+T}, który w tej konfiguracji jest przypisany do wyświetlenia typu wyrażenia pod kursorem. Informacja pojawi się na dole i będzie postaci \textit{Type of that expression: ...}.
+
 Dostępne są następujące skróty klawiszowe:
 
 \begin{itemize}
-\item \texttt{J} -- skok do definicji (stałej, funkcji lub zmiennej)
-\item \texttt{T} -- informacja o typie zmiennej
+\item \texttt{Shift+J} -- skok do definicji (stałej, funkcji lub zmiennej)
+\item \texttt{Shift+T} -- informacja o typie wyrażenia pod kursorem
 \item \texttt{Ctrl+X Ctrl+O} -- autouzupełnianie pełnej nazwy aktualnie pisanej nazwy funkcji
 \end{itemize}
 
+
+Katalog dema składa się z wtyczki vim-ruby \cite{VIMRUBY} do kolorowania składni języka Ruby, wspomnianej już wcześniej wtyczki LanguageClient-neovim \cite{LSPCLIENT} oraz pliku konfiguracyjnego edytora VIM.
 
 
 
