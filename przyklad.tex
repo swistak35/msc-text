@@ -38,7 +38,7 @@
     Współcześni programiści mogą wybierać spośród wielu różnych edytorów tekstu do edycji kodu źródłowego. Jedną z rzeczy ułatwiających ich pracę jest wsparcie edytora dla danego języka programowania pozwalające na szybkie poruszanie się po definicjach lub podpowiedzi podczas edycji kodu. Praca ma na celu opisanie wtyczki, która dzięki analizie statycznej kodu źródłowego dostarcza te funkcjonalności programistom języka Ruby. Z powodu dynamicznej natury tego języka, analiza statyczna wymaga wielu heurystyk i równowagi pomiędzy bezpieczeństwem analizy a użytecznością dla programistów.
 }
 \englishabstract{
-    Currently programmers have ability to choose from variety of text editors to edit source code. Editor support for programming languages is one of the features allowing programmers to accurate jumping to definitions or providing him with suggestions when editing source code. The purpose of this master's thesis is to describe the plug-in delivering these functionalities to Ruby programmers thanks to static code analysis. Due to Ruby's dynamic nature, static analysis require multiple heuristics and balancing between analysis' safety and usefulness for programmers.
+    Currently programmers have ability to choose from variety of text editors to edit source code. Editor support for programming languages is one of the features allowing programmers to accurate jumping to definitions or providing him with suggestions when editing source code. The purpose of this master's thesis is to describe a plugin delivering these functionalities to Ruby programmers based on static code analysis. Due to Ruby's dynamic nature, static analysis require multiple heuristics and balancing between analysis' safety and usefulness for programmers.
 }
 % w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
 \author         {Rafał Łasocha}
@@ -114,7 +114,7 @@ Najpopularniejsze wtyczki to:
 \subsection{Założenia i cele}
 
 Celem pracy jest napisanie wtyczki działającej w zwykłych edytorach tekstu, która będzie oferować narzędzia wspierające pracę programisty.
-Nie powinna wymagać od programisty zaawansowanej konfiguracji oraz żadnego wkładu ze strony programisty (w szczególności pisania adnotacji typów).
+Nie powinna wymagać zaawansowanej konfiguracji oraz żadnego wkładu ze strony programisty (w szczególności pisania adnotacji typów).
 Powinna dostarczyć jak najbardziej trafne informacje, głównie wykorzystując analizę statyczną, ale również inne źródła, jeśli jest to możliwe.
 Informacje dostarczane przez wtyczkę niekoniecznie muszą być bezpieczne (w rozumieniu bezpiecznej analizy statycznej), bo jest to tylko wsparcie programisty, pozwalające sprawniej mu się poruszać po kodzie i go pisać.
 Powinna brać pod uwagę jaki kod jest często produkowany (a więc -- z którym programiści muszą pracować na co dzień), nawet jeżeli jest to kod niekoniecznie dobrej jakości.
@@ -158,7 +158,7 @@ Programista często chce dowiedzieć się jak wyglądają definicje różnych by
 
 Przypadek zmiennej lokalnej jest nieskomplikowany i rzadko potrzebny, ponieważ krótkie metody z reguły powodują że definicja jest widoczna na pierwszy rzut oka. Inaczej jest w przypadku stałej. Wbrew pozorom, odszukanie takiej definicji nie jest proste, ponieważ w Ruby stałe mogą być przypisywane ponownie (sic), a reguły zagnieżdżania i referencji nie są łatwe (z reguły są zrozumiałe dla osób z kilkuletnim doświadczeniem).
 
-Jednak najtrudniejszą część, a jednocześnie najbardziej potrzebną jest skok do definicji metody. Metoda jest zawsze wywoływana na jakimś wyrażeniu, więc musimy znać \enquote{typ} obiektu do którego ewaluuje się dane wyrażenie aby zlokalizować odpowiednią definicję.
+Jednak najtrudniejszą częścią, a jednocześnie najbardziej potrzebną jest skok do definicji metody. Metoda jest zawsze wywoływana na jakimś wyrażeniu, więc musimy znać \enquote{typ} obiektu do którego ewaluuje się dane wyrażenie aby zlokalizować odpowiednią definicję.
 
 \subsubsection{Autouzupełnianie}
 
@@ -168,9 +168,9 @@ Pisząc kod, programista chce uniknąć napisania błędnej nazwy metody. Pomaga
 
 Uruchomienie serwera rozpoczyna przeindeksowanie wszystkich plików. Indeksowanie to spora część frontendu typowego interpretera, zawierającego analizę leksykalną, składniową i semantyczną. Proces ten składa się z trzech etapów:
 \begin{enumerate}
-\item Sparsowaniu pliku źródłowego do AST (\textit{abstract syntax tree})
-\item Przejściu przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz jednocześnie zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku. Idea algorytmu budującego graf przepływu dla danych bazującego na AST została zaczerpnięta z pracy \citet*{FICA}, która miała na celu optymalizację kompilatorów dla obiektowych języków programowania.
-\item Uruchomieniu funkcji wnioskującej typ wszystkich wierzchołków z DFG na podstawie informacji w grafie i hierarchii klas.
+\item Sparsowanie pliku źródłowego do AST (\textit{abstract syntax tree})
+\item Przejście przez AST funkcją dodającą wierzchołki i krawędzie do DFG (\textit{data flow graph}) oraz jednocześnie zbierającą informacje o definicjach klas, modułów i metod. Wierzchołki są często przypisane do danego węzła w AST, a więc również ścieżki i pozycji w pliku. Idea algorytmu budującego graf przepływu dla danych bazującego na AST została zaczerpnięta z pracy \citet*{FICA}, która miała na celu optymalizację kompilatorów dla obiektowych języków programowania.
+\item Uruchomienie funkcji wnioskującej typ wszystkich wierzchołków z DFG na podstawie informacji w grafie i hierarchii klas.
 \end{enumerate}
 
 \chapter{Budowanie grafu przepływu danych}
@@ -415,7 +415,7 @@ Mamy następujące typy:
  \item \texttt{NominalType(Foo)} -- podstawowy typ, oznacza że wyrażenie jest instancją klasy Foo.
  \item \texttt{ClassType(Foo)} -- typ oznaczający że wyrażenie jest klasą \texttt{Foo}. Innymi słowy, jest instancją klasy \texttt{Class} lub instancją \textit{eigenclass} klasy \texttt{Foo}, ale tak dokładna informacja jest oczywiście przydatniejsza niż samo \texttt{NominalType(Class)}, dlatego mamy oddzielny typ na ten specjalny przypadek.
  \item \texttt{GenericType(Foo)<typ1, typ2, ...>} -- typ oznaczający jeden z typów generycznych. Opisane w pracy są dwa: \texttt{Array} posiadający jeden parametr, oraz \texttt{Hash} posiadający dwa parametry (typ kluczy i typ wartości). Parametry są typami. Można sobie łatwo wyobrazić rozszerzenie na inne klasy z biblioteki standardowej, takie jak \texttt{Set} lub \texttt{Range}.
- \item \texttt{UnionType(typ1, typ2, ...)} -- typ oznaczającą dowolny z wymienionych typów. Większość rodzajów wierzchołków w funkcji typującej jedyne co robi to bierze typy z wszystkich wierzchołków wejściowych i tworzy z nich jeden \texttt{UnionType}.
+ \item \texttt{UnionType(typ1, typ2, ...)} -- typ oznaczający dowolny z wymienionych typów. Większość rodzajów wierzchołków w funkcji typującej jedyne co robi to bierze typy z wszystkich wierzchołków wejściowych i tworzy z nich jeden \texttt{UnionType}.
  \item \texttt{MainType} -- typ szczególny, mało istotny w typowaniu. Definicje metod, które są zdefiniowane nie w definicji klasy, są zdefiniowane na specjalnym obiekcie \texttt{main}.
 \end{itemize}
 
@@ -638,7 +638,7 @@ Pierwszym jest tzw. \textit{splat argument}. Zarówno w argumentach wywołania (
 	\label{fig:formal-splat}
 \end{figure}
 
-Drugi to \textit{named arguments} czyli argumenty, które w wywołaniu muszą być przekazane razem z nazwą argumentu formalnego, ale dzięki temu mogą być przekazane w dowolnej kolejności. Niestety, jest to tylko pewna sztuczka głównie po stronie parsera. Mechanizm \textit{named arguments} w Ruby polega na tym, że jeżeli ostatni przekazywany argument jest słownikiem, to jest traktowany jako słownik zawierający przekazywane \textit{named arguments}. Z tego powodu, przekazywane argumenty wcale nie muszą być przekazywane explicit, ale mogą być przekazane np. przez zwykłą zmienną, która jest słownikiem (Rys. \ref{fig:named-args}). Dlatego też aby poprawnie dopasować przekazane \textit{named arguments} do tych w definicji wywołania, musielibyśmy śledzić dokładne mapowanie typów w każdym słowniku.
+Drugi to \textit{named arguments} czyli argumenty, które w wywołaniu muszą być przekazane razem z nazwą argumentu formalnego, ale dzięki temu mogą być przekazane w dowolnej kolejności. Niestety, jest to tylko pewna sztuczka głównie po stronie parsera. Mechanizm \textit{named arguments} w Ruby polega na tym, że jeżeli ostatni przekazywany argument jest słownikiem, to jest traktowany jako słownik zawierający przekazywane \textit{named arguments}. Z tego powodu, przekazywane argumenty wcale nie muszą być przekazywane explicite, ale mogą być przekazane np. przez zwykłą zmienną, która jest słownikiem (Rys. \ref{fig:named-args}). Dlatego też aby poprawnie dopasować przekazane \textit{named arguments} do tych w definicji wywołania, musielibyśmy śledzić dokładne mapowanie typów w każdym słowniku.
 
 \begin{figure}[htb]
 	\centering
